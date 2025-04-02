@@ -1,11 +1,13 @@
 package org.itech.framework.fx.java_fx;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.itech.framework.fx.core.annotations.jfx.EnableJavaFx;
 import org.itech.framework.fx.core.processor.components_processor.ComponentProcessor;
+import org.itech.framework.fx.core.resourcecs.CleanupRegistry;
 import org.itech.framework.fx.core.store.ComponentStore;
 import org.itech.framework.fx.exceptions.FrameworkException;
 import org.itech.framework.fx.java_fx.processor.JavaFxComponentProcessor;
@@ -37,6 +39,8 @@ public abstract class ITechJavaFxApplication extends Application {
 
     @Override
     public void stop() throws Exception {
-        logger.debug("Framework resources cleaned up");
+        logger.debug("Framework resources is cleaning up...");
+        Platform.exit(); // Force JavaFX shutdown
+        System.exit(0);  // Terminate JVM (optional)
     }
 }

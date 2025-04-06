@@ -4,6 +4,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.itech.framework.fx.core.store.ComponentStore;
 import org.itech.framework.fx.java_fx.helpers.FxControllerLoader;
 import org.itech.framework.fx.java_fx.router.config.Middleware;
@@ -14,6 +16,7 @@ import org.itech.framework.fx.java_fx.router.core.Route;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 public class Router {
@@ -23,10 +26,13 @@ public class Router {
     private Stage primaryStage;
     private Class<?> primaryClass;
 
+    private static final Logger logger = LogManager.getLogger(Router.class);
+
     public void initialize(Class<?> clazz, Stage stage) {
         this.primaryClass = clazz;
         this.primaryStage = stage;
         Scene rootScene = new Scene(new StackPane());
+        config.addStyleSheets(Objects.requireNonNull(getClass().getResource("/static/css/style.css")).toExternalForm());
         primaryStage.setScene(rootScene);
     }
 
@@ -83,13 +89,18 @@ public class Router {
     }
 
     private void navigateTo(Route route, Object arguments, boolean replace) {
+        logger.debug("Navigating to {}", route.name());
         try {
             if (!runMiddlewares(route, arguments)) return;
+
+            logger.debug("Loading page...");
 
             Parent root = FxControllerLoader.load(
                     primaryClass,
                     route.fxmlPath()
             );
+
+            logger.debug("Page loaded.");
 
             updateSceneRoot(root);
 
@@ -99,6 +110,7 @@ public class Router {
 
             updateNavigationStack(route, replace);
 
+            logger.debug("Navigated to {}", route.name());
         } catch (Exception e) {
             throw new RuntimeException("Navigation failed: " + e.getMessage(), e);
         }
@@ -117,6 +129,7 @@ public class Router {
         } else {
             primaryStage.getScene().setRoot(root);
         }
+        primaryStage.getScene().getStylesheets().addAll(getConfig().getStyleSheets());
     }
 
     private void handleControllerNavigation(Route route, Object arguments) {

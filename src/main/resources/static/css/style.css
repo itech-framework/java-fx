@@ -1,0 +1,246 @@
+/* modern-styles.css */
+
+/* Base variables - Light Theme (default) */
+.root {
+    /* Colors */
+    -fx-base: #ffffff;
+    -fx-background: #f5f5f5;
+    -fx-text-color: #212121;
+    -fx-border-base: #ced4da;
+    -fx-disabled: #6c757d;
+
+    /* Color palette */
+    -fx-primary: #2196F3;
+    -fx-primary-dark: #1976D2;
+    -fx-secondary: #4CAF50;
+    -fx-secondary-dark: #388E3C;
+    -fx-success: #8BC34A;
+    -fx-danger: #FF5252;
+    -fx-danger-dark: #ff0000;
+    -fx-warning: #FFC107;
+    -fx-info: #00BCD4;
+    -fx-light: #f8f9fa;
+    -fx-dark: #212121;
+
+    /* Common styles */
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Dark Theme Overrides */
+.root.dark-mode {
+    -fx-base: #2b2b2b;
+    -fx-background: #1e1e1e;
+    -fx-text-color: #e0e0e0;
+    -fx-border-base: #404040;
+    -fx-disabled: #555555;
+
+    -fx-primary: #1976D2;
+    -fx-primary-dark: #1565C0;
+    -fx-secondary: #388E3C;
+    -fx-secondary-dark: #2E7D32;
+    -fx-danger: #FF5252;
+    -fx-danger-dark: #ff0000;
+    -fx-light: #2d2d2d;
+    -fx-dark: #e0e0e0;
+}
+
+/* Base styles for all controls */
+.button, .text-field, .combo-box, .table-view, .menu-bar {
+    -fx-background-color: -fx-base;
+    -fx-text-fill: -fx-text-color;
+}
+
+/* ================= BUTTON STYLES ================= */
+.button {
+    -fx-background-radius: 5px;
+    -fx-padding: 4px 12px;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+    -fx-cursor: hand;
+    -fx-transition: all 0.2s;
+    -fx-background-color: -fx-base;
+    -fx-text-fill: -fx-text-color;
+}
+
+/* Primary Button */
+.button.primary {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: white;
+}
+
+.button.primary:hover {
+    -fx-background-color: -fx-primary-dark;
+}
+
+/* Secondary Button */
+.button.secondary {
+    -fx-background-color: -fx-secondary;
+    -fx-text-fill: white;
+}
+
+.button.secondary:hover {
+    -fx-background-color: -fx-secondary-dark;
+}
+
+/* Danger Button */
+.button.danger {
+    -fx-background-color: -fx-danger;
+    -fx-text-fill: white;
+}
+
+.button.danger:hover {
+    -fx-background-color: -fx-danger-dark;
+}
+
+/* Disabled State */
+.button:disabled {
+    -fx-background-color: -fx-disabled;
+    -fx-text-fill: derive(-fx-disabled, 40%);
+    -fx-cursor: default;
+}
+
+.root.dark-mode .button:disabled {
+    -fx-text-fill: derive(-fx-disabled, -20%);
+}
+
+/* ================= TEXT FIELDS ================= */
+.text-field, .password-field {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-color: -fx-border-base;
+    -fx-border-width: 1px;
+    -fx-padding: 4px 8px;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: -fx-primary;
+    -fx-effect: dropshadow(gaussian, rgba(33,150,243,0.25), 10, 0, 0, 0);
+}
+
+/* ================= TABLES ================= */
+.table-view {
+    -fx-border-color: -fx-border-base;
+    -fx-border-radius: 5px;
+}
+
+.table-view .column-header {
+    -fx-background-color: -fx-light;
+}
+
+.table-row-cell:even {
+    -fx-background-color: derive(-fx-base, 5%);
+}
+
+.table-row-cell:odd {
+    -fx-background-color: derive(-fx-base, 0%);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: derive(-fx-primary, -20%);
+}
+
+/* ================= SCROLLBARS ================= */
+.scroll-bar .thumb {
+    -fx-background-color: derive(-fx-text-color, 50%);
+}
+
+/* ================= MENUS ================= */
+.menu-bar {
+    -fx-border-color: -fx-border-base;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.menu-item:hover {
+    -fx-background-color: derive(-fx-base, -10%);
+}
+
+/* ================= TABS ================= */
+.tab-pane {
+    -fx-background-color: -fx-base;
+}
+
+.tab {
+    -fx-background-color: derive(-fx-base, -10%);
+}
+
+.tab:selected {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-primary;
+}
+
+/* ================= CHECKBOXES ================= */
+.check-box .box {
+    -fx-border-color: -fx-border-base;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: -fx-primary;
+}
+
+/* ================= SLIDERS ================= */
+.slider .track {
+    -fx-background-color: derive(-fx-base, -20%);
+}
+
+.slider .thumb {
+    -fx-background-color: -fx-primary;
+}
+
+/* ================= PROGRESS BARS ================= */
+.progress-bar .bar {
+    -fx-background-color: -fx-primary;
+}
+
+/* ================= COMBO BOXES ================= */
+.combo-box {
+    -fx-border-color: -fx-border-base;
+}
+
+/* ================= DIALOG PANES ================= */
+.dialog-pane {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-border-base;
+}
+
+/* ================= TOOLTIPS ================= */
+.tooltip {
+    -fx-background-color: -fx-base;
+    -fx-text-fill: -fx-text-color;
+    -fx-border-color: -fx-border-base;
+}
+
+/* ================= DARK MODE ADJUSTMENTS ================= */
+.root.dark-mode .table-row-cell:even {
+    -fx-background-color: derive(-fx-base, 5%);
+}
+
+.root.dark-mode .table-row-cell:odd {
+    -fx-background-color: derive(-fx-base, -5%);
+}
+
+.root.dark-mode .scroll-bar .thumb {
+    -fx-background-color: derive(-fx-text-color, -30%);
+}
+
+.root.dark-mode .menu-item:hover {
+    -fx-background-color: derive(-fx-primary, -80%);
+}
+
+/* ================= UTILITY CLASSES ================= */
+.success-text {
+    -fx-text-fill: -fx-success;
+}
+
+.error-text {
+    -fx-text-fill: -fx-danger;
+}
+
+.warning-text {
+    -fx-text-fill: -fx-warning;
+}
+
+.info-text {
+    -fx-text-fill: -fx-info;
+}

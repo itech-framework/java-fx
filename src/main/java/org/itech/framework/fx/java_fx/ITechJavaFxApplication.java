@@ -12,6 +12,7 @@ import org.itech.framework.fx.core.store.ComponentStore;
 import org.itech.framework.fx.exceptions.FrameworkException;
 import org.itech.framework.fx.java_fx.processor.JavaFxComponentProcessor;
 import org.itech.framework.fx.java_fx.router.Router;
+import org.itech.framework.fx.utils.ReflectionUtils;
 
 public abstract class ITechJavaFxApplication extends Application {
     private static final Logger logger = LogManager.getLogger(ITechJavaFxApplication.class);
@@ -22,17 +23,20 @@ public abstract class ITechJavaFxApplication extends Application {
         if(!clazz.isAnnotationPresent(EnableJavaFx.class)){
             throw new FrameworkException("To run JavaFx application please use the @EnableJavaFx on main class!");
         }
-
         JavaFxComponentProcessor.initializeFxControllers(clazz);
-
-        // register router inside the components
-        ComponentStore.registerComponent(Router.class.getName(), router, ComponentProcessor.DEFAULT_LEVEL);
-
         Application.launch(clazz, args);
     }
 
     @Override
-    public abstract void init() throws Exception;
+    public final void init() throws Exception {
+        ComponentProcessor.injectFields(getClass(), this);
+        ComponentProcessor.injectMethods(getClass(), this);
+        onInit();
+        // register router inside the components
+        ComponentStore.registerComponent(Router.class.getName(), router, ComponentProcessor.DEFAULT_LEVEL);
+    }
+
+    protected abstract void onInit() throws Exception;
 
     @Override
     public abstract void start(Stage primaryStage) throws Exception;
@@ -41,6 +45,6 @@ public abstract class ITechJavaFxApplication extends Application {
     public void stop() throws Exception {
         logger.debug("Framework resources is cleaning up...");
         Platform.exit(); // Force JavaFX shutdown
-        System.exit(0);  // Terminate JVM (optional)
+        System.exit(0);  // Terminate JVM
     }
 }

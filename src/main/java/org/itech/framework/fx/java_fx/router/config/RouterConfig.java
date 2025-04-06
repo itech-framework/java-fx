@@ -12,6 +12,10 @@ public class RouterConfig {
     @Getter
     private final List<Middleware> middlewares = new ArrayList<>();
     private final Map<String, TransitionEffect> transitions = new HashMap<>();
+
+    @Getter
+    private final List<String> styleSheets = new ArrayList<>();
+
     @Setter
     private TransitionEffect defaultTransition = root -> {};
 
@@ -21,6 +25,10 @@ public class RouterConfig {
 
     public void addTransition(String name, TransitionEffect effect) {
         transitions.put(name, effect);
+    }
+
+    public void addStyleSheets(String cssPath){
+        styleSheets.add(cssPath);
     }
 
     public TransitionEffect getTransition(String name) {

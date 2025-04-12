@@ -6,7 +6,7 @@
     -fx-base: #ffffff;
     -fx-background: #f5f5f5;
     -fx-text-color: #212121;
-    -fx-border-base: #ced4da;
+    -fx-border-base: #b3c6d6;
     -fx-disabled: #6c757d;
 
     /* Color palette */
@@ -30,24 +30,33 @@
 
 /* Dark Theme Overrides */
 .root.dark-mode {
-    -fx-base: #2b2b2b;
-    -fx-background: #1e1e1e;
-    -fx-text-color: #e0e0e0;
-    -fx-border-base: #404040;
-    -fx-disabled: #555555;
+    /* Deep Ocean Color Scheme */
+    -fx-base: #0F1B2D;          /* Deep navy base color */
+    -fx-background: #0A121F;     /* Dark ocean background */
+    -fx-text-color: #E0F2F1;
+    -fx-border-base: #1E3254;    /* Deep blue borders */
+    -fx-disabled: #546E7A;       /* Cool gray disabled state */
 
-    -fx-primary: #1976D2;
-    -fx-primary-dark: #1565C0;
-    -fx-secondary: #388E3C;
-    -fx-secondary-dark: #2E7D32;
-    -fx-danger: #FF5252;
-    -fx-danger-dark: #ff0000;
-    -fx-light: #2d2d2d;
-    -fx-dark: #e0e0e0;
+    /* Color palette */
+    -fx-primary: #1976D2;        /* Deep ocean blue */
+    -fx-primary-dark: #115293;    /* Darker navy */
+    -fx-secondary: #4DB6AC;      /* Aquatic teal */
+    -fx-secondary-dark: #00897B;  /* Deep teal */
+    -fx-success: #00BFA5;        /* Sea green */
+    -fx-danger: #EF5350;         /* Coral red */
+    -fx-danger-dark: #D32F2F;     /* Deep coral */
+    -fx-warning: #FFD740;        /* Golden sand */
+    -fx-info: #40C4FF;           /* Light wave blue */
+    -fx-light: #263238;          /* Dark surface color */
+    -fx-dark: #CFD8DC;           /* Light text for dark mode */
+
+    /* Additional oceanic accents */
+    -fx-accent: #26A69A;         /* Medium teal */
+    -fx-ripple-color: #1E325480; /* Deep blue ripple effect */
 }
 
 /* Base styles for all controls */
-.button, .text-field, .combo-box, .table-view, .menu-bar {
+.button, .text-field, .combo-box, .table-view, .menu-bar,.textarea {
     -fx-background-color: -fx-base;
     -fx-text-fill: -fx-text-color;
 }
@@ -106,7 +115,7 @@
 }
 
 /* ================= TEXT FIELDS ================= */
-.text-field, .password-field {
+.text-field, .password-field, .textarea {
     -fx-background-radius: 5px;
     -fx-border-radius: 5px;
     -fx-border-color: -fx-border-base;
@@ -114,7 +123,7 @@
     -fx-padding: 4px 8px;
 }
 
-.text-field:focused, .password-field:focused {
+.text-field:focused, .password-field:focused, .textarea:focused{
     -fx-border-color: -fx-primary;
     -fx-effect: dropshadow(gaussian, rgba(33,150,243,0.25), 10, 0, 0, 0);
 }
@@ -128,17 +137,48 @@
 .table-view .column-header {
     -fx-background-color: -fx-light;
 }
-
+.table-row-cell, .table-cell{
+    -fx-text-fill: -fx-text-color;
+    -fx-alignment: CENTER;
+    -fx-cell-size: 40px;
+}
 .table-row-cell:even {
-    -fx-background-color: derive(-fx-base, 5%);
+    -fx-background-color: -fx-base;
 }
 
 .table-row-cell:odd {
-    -fx-background-color: derive(-fx-base, 0%);
+    -fx-background-color: -fx-background;
+}
+.root.dark-mode .table-row-cell:even {
+    -fx-background-color: derive(-fx-base, 15%);
+}
+
+.root.dark-mode .table-row-cell:odd {
+    -fx-background-color: derive(-fx-base, 5%);
 }
 
 .table-row-cell:selected {
+    -fx-text-fill: white;
     -fx-background-color: derive(-fx-primary, -20%);
+}
+.root.dark-mode .table-row-cell:selected{
+    -fx-text-fill: white;
+    -fx-background-color: -fx-primary;
+}
+.root.dark-mode .table-row-cell .table-cell {
+    -fx-text-fill: -fx-text-color;
+}
+
+.root.dark-mode .table-view .column-header {
+    -fx-background-color: derive(-fx-base, -10%);
+}
+
+.root.dark-mode .table-row-cell:even {
+    -fx-background-color: derive(-fx-base, 5%);
+}
+
+.root.dark-mode .table-row-cell:odd {
+    -fx-background-color: derive(-fx-base, -5%);
 }
 
 /* ================= SCROLLBARS ================= */
@@ -153,7 +193,7 @@
 }
 
 .menu-item:hover {
-    -fx-background-color: derive(-fx-base, -10%);
+    -fx-background-color: derive(-fx-base, -20%);
 }
 
 /* ================= TABS ================= */
@@ -200,7 +240,7 @@
 
 /* ================= DIALOG PANES ================= */
 .dialog-pane {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-background;
     -fx-border-color: -fx-border-base;
 }
 
@@ -243,4 +283,107 @@
 
 .info-text {
     -fx-text-fill: -fx-info;
+}
+
+.error-field {
+    -fx-border-color: #ff4444;
+    -fx-border-width: 2px;
+    -fx-border-radius: 3px;
+    -fx-focus-color: #ff4444;
+}
+
+.error-field .tooltip {
+    -fx-background-color: #ff4444;
+    -fx-text-fill: white;
+}
+
+/* Context menu styling */
+.context-menu {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-border-base;
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 0);
+}
+
+.menu-item {
+    -fx-text-fill: -fx-text-color;
+    -fx-padding: 8px 16px;
+    -fx-graphic-text-gap: 8px;
+}
+
+.menu-item .label {
+    -fx-font-family: "FontAwesome"; /* If using icon font */
+}
+
+.menu-item:hover {
+    -fx-background-color: derive(-fx-primary, 80%);
+}
+
+/* Dark mode adjustments */
+.root.dark-mode .context-menu {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-border-base;
+}
+
+.root.dark-mode .menu-item:hover {
+    -fx-background-color: derive(-fx-primary, -20%);
+}
+/* Add to your existing CSS file */
+.alert-container {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-border-base;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    /*-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);*/
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+
+.alert-title {
+    -fx-font-size: 1.2em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-color;
+}
+
+.alert-message {
+    -fx-font-size: 1.1em;
+    -fx-text-fill: derive(-fx-text-color, 30%);
+}
+
+.alert-icon {
+    -fx-stroke-width: 2;
+}
+
+.alert-default-button {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: white;
+    -fx-padding: 4px 12px;
+    -fx-font-size: 12px;
+    -fx-background-radius: 4px;
+}
+
+.alert-default-button:hover {
+    -fx-background-color: derive(-fx-primary, -10%);
+}
+
+/* Level-specific styles using theme variables */
+.alert-error .alert-icon { -fx-fill: -fx-danger; }
+.alert-warning .alert-icon { -fx-fill: -fx-warning; }
+.alert-info .alert-icon { -fx-fill: -fx-info; }
+.alert-success .alert-icon { -fx-fill: -fx-success; }
+
+/* Dark mode specific adjustments */
+.root.dark-mode .alert-container {
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.05), 10, 0, 0, 0);
+}
+
+.root.dark-mode .alert-default-button {
+    -fx-text-fill: -fx-light;
+}
+
+.root.dark-mode .alert-default-button:hover {
+    -fx-background-color: derive(-fx-primary, 10%);
 }

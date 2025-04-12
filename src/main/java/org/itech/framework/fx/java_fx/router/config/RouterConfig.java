@@ -14,6 +14,10 @@ public class RouterConfig {
     private final Map<String, TransitionEffect> transitions = new HashMap<>();
 
     @Getter
+    @Setter
+    private static String darkModeKey = "isDarkMode";
+
+    @Getter
     private final List<String> styleSheets = new ArrayList<>();
 
     @Setter
@@ -34,4 +38,6 @@ public class RouterConfig {
     public TransitionEffect getTransition(String name) {
         return transitions.getOrDefault(name, defaultTransition);
     }
+
+
 }

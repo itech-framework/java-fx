@@ -1,11 +1,8 @@
 package org.itech.framework.fx.java_fx.helpers;
 
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.LoadListener;
 import org.itech.framework.fx.core.processor.components_processor.ComponentProcessor;
 import org.itech.framework.fx.core.store.ComponentStore;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 public class FxControllerLoader {
     public static <T> T load(Class<?> contextClass, String fxmlPath) throws Exception {

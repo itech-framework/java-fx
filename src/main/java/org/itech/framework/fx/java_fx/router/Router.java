@@ -4,9 +4,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.itech.framework.fx.core.store.ComponentStore;
+import org.itech.framework.fx.core.utils.DataStorageUtil;
 import org.itech.framework.fx.java_fx.helpers.FxControllerLoader;
 import org.itech.framework.fx.java_fx.router.config.Middleware;
 import org.itech.framework.fx.java_fx.router.config.RouterConfig;
@@ -22,9 +24,13 @@ import java.util.Stack;
 public class Router {
     private final Map<String, Route> routes = new HashMap<>();
     private final Stack<Route> navigationStack = new Stack<>();
+    @Getter
     private final RouterConfig config = new RouterConfig();
     private Stage primaryStage;
     private Class<?> primaryClass;
+    private Object currentArguments;
+    private Route currentRoute;
+    private Parent currentRoot;
 
     private static final Logger logger = LogManager.getLogger(Router.class);
 
@@ -34,10 +40,6 @@ public class Router {
         Scene rootScene = new Scene(new StackPane());
         config.addStyleSheets(Objects.requireNonNull(getClass().getResource("/static/css/style.css")).toExternalForm());
         primaryStage.setScene(rootScene);
-    }
-
-    public RouterConfig getConfig() {
-        return config;
     }
 
     public void registerRoute(Route route) {
@@ -110,9 +112,56 @@ public class Router {
 
             updateNavigationStack(route, replace);
 
+            currentArguments = arguments;
+            currentRoot = root;
+            currentRoute = route;
             logger.debug("Navigated to {}", route.name());
         } catch (Exception e) {
             throw new RuntimeException("Navigation failed: " + e.getMessage(), e);
+        }
+    }
+
+    public void refresh() {
+        refresh(currentArguments);
+    }
+
+    public void refresh(Object newArguments) {
+        if (currentRoute == null) return;
+        try {
+            Parent newRoot = FxControllerLoader.load(
+                    primaryClass,
+                    currentRoute.fxmlPath()
+            );
+
+            Object newController = ComponentStore.getComponent(currentRoute.controllerClass());
+
+            handleRefreshLifecycle(newController, newArguments);
+
+            // Update view
+            updateSceneRoot(newRoot);
+            applyTransition(newRoot, currentRoute);
+
+            // Update references
+            currentRoot = newRoot;
+            currentArguments = newArguments;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Refresh failed", e);
+        }
+    }
+
+    private void handleRefreshLifecycle(Object controller, Object arguments) {
+        // Call cleanup on old controller
+        if (currentRoot != null) {
+            Object oldController = ComponentStore.getComponent(currentRoute.controllerClass());
+            if (oldController instanceof Routable) {
+                ((Routable) oldController).onReturn(null);
+            }
+        }
+
+        if (controller instanceof Routable routable) {
+            routable.onNavigate(arguments);
+            routable.refresh();
         }
     }
 
@@ -130,6 +179,15 @@ public class Router {
             primaryStage.getScene().setRoot(root);
         }
         primaryStage.getScene().getStylesheets().addAll(getConfig().getStyleSheets());
+        // check for dark mode
+        if(DataStorageUtil.load(RouterConfig.getDarkModeKey())!=null){
+            boolean isDarkMode = Boolean.parseBoolean((String) DataStorageUtil.load(RouterConfig.getDarkModeKey()));
+            if(isDarkMode){
+                primaryStage.getScene().getRoot().getStyleClass().add("dark-mode");
+            }else{
+                primaryStage.getScene().getRoot().getStyleClass().remove("dark-mode");
+            }
+        }
     }
 
     private void handleControllerNavigation(Route route, Object arguments) {

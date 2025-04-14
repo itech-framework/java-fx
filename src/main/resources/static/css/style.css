@@ -23,7 +23,7 @@
     -fx-dark: #212121;
 
     /* Common styles */
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    /*-fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;*/
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
@@ -53,6 +53,12 @@
     /* Additional oceanic accents */
     -fx-accent: #26A69A;         /* Medium teal */
     -fx-ripple-color: #1E325480; /* Deep blue ripple effect */
+}
+
+.blur-effect {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, 0);
+    -fx-background-color: -fx-background;
+    -fx-background-radius: 10;
 }
 
 /* Base styles for all controls */
@@ -137,40 +143,19 @@
 .table-view .column-header {
     -fx-background-color: -fx-light;
 }
-.table-row-cell, .table-cell{
+
+.table-row-cell, .table-cell {
     -fx-text-fill: -fx-text-color;
     -fx-alignment: CENTER;
     -fx-cell-size: 40px;
 }
+
 .table-row-cell:even {
     -fx-background-color: -fx-base;
 }
 
 .table-row-cell:odd {
     -fx-background-color: -fx-background;
-}
-.root.dark-mode .table-row-cell:even {
-    -fx-background-color: derive(-fx-base, 15%);
-}
-
-.root.dark-mode .table-row-cell:odd {
-    -fx-background-color: derive(-fx-base, 5%);
-}
-
-.table-row-cell:selected {
-    -fx-text-fill: white;
-    -fx-background-color: derive(-fx-primary, -20%);
-}
-.root.dark-mode .table-row-cell:selected{
-    -fx-text-fill: white;
-    -fx-background-color: -fx-primary;
-}
-.root.dark-mode .table-row-cell .table-cell {
-    -fx-text-fill: -fx-text-color;
-}
-
-.root.dark-mode .table-view .column-header {
-    -fx-background-color: derive(-fx-base, -10%);
 }
 
 .root.dark-mode .table-row-cell:even {
@@ -179,6 +164,30 @@
 
 .root.dark-mode .table-row-cell:odd {
     -fx-background-color: derive(-fx-base, -5%);
+}
+
+/* Selected row styling */
+.table-row-cell:selected {
+    -fx-text-fill: white;
+    -fx-background-color: derive(-fx-primary, -20%);
+    -fx-background-insets: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.root.dark-mode .table-view .table-row-cell:selected {
+    -fx-text-fill: black;
+    -fx-background-color: derive(-fx-primary, 80%);
+    -fx-background-insets: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.root.dark-mode .table-row-cell:selected .table-cell {
+    -fx-text-fill: black;
+    -fx-background-color: transparent;
+}
+
+.root.dark-mode .table-view .column-header {
+    -fx-background-color: derive(-fx-base, -10%);
 }
 
 /* ================= SCROLLBARS ================= */
@@ -314,7 +323,7 @@
 }
 
 .menu-item .label {
-    -fx-font-family: "FontAwesome"; /* If using icon font */
+    -fx-padding: 0px 10px;
 }
 
 .menu-item:hover {

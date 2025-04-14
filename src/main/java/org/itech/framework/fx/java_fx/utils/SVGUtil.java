@@ -13,6 +13,8 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class SVGUtil {
     public static final String EDIT_ICON_PATH = "M402.6 83.2l90.2 90.2c3.8 3.8 3.8 10 0 13.8L274.4 405.6l-92.8 10.3c-12.4 1.4-22.9-9.1-21.5-21.5l10.3-92.8L388.8 83.2c3.8-3.8 10-3.8 13.8 0zm162-22.9l-48.8-48.8c-15.2-15.2-39.9-15.2-55.2 0l-35.4 35.4c-3.8 3.8-3.8 10 0 13.8l90.2 90.2c3.8 3.8 10 3.8 13.8 0l35.4-35.4c15.2-15.3 15.2-40 0-55.2zM384 346.2V448H64V128h229.8c3.2 0 6.2-1.3 8.5-3.5l40-40c7.6-7.6 2.2-20.5-8.5-20.5H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V306.2c0-10.7-12.9-16-20.5-8.5l-40 40c-2.2 2.3-3.5 5.3-3.5 8.5z";
@@ -47,33 +49,23 @@ public class SVGUtil {
         return container;
     }
 
-    public static Node getIcon(File svgFile, Color iconColor, double width, double height) {
-        SVGPath svg = new SVGPath();
+    public static Node getIcon(InputStream svgStream, Color iconColor, double width, double height) {
         try {
-            svg.setContent(extractPathData(svgFile));
+            return getIcon(extractPathData(svgStream), iconColor, width, height);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        svg.setFill(iconColor);
-
-        StackPane container = new StackPane(svg);
-        container.setPrefSize(width, height);
-        container.setMaxSize(width, height);
-        container.setMinSize(width, height);
-
-        Platform.runLater(() -> {
-            Bounds bounds = svg.getBoundsInParent();
-            if (bounds.getWidth() > 0 && bounds.getHeight() > 0) {
-                double scale = Math.min(width / bounds.getWidth(), height / bounds.getHeight());
-                svg.setScaleX(scale);
-                svg.setScaleY(scale);
-            }
-        });
-
-        return container;
     }
 
-    public static String extractPathData(File svgFile) throws Exception {
+    public static Node getIcon(File svgFile, Color iconColor, double width, double height) {
+        try {
+            return getIcon(extractPathData(svgFile), iconColor, width, height);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*public static String extractPathData(File svgFile) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(svgFile);
@@ -84,6 +76,25 @@ public class SVGUtil {
             return pathElement.getAttribute("d");
         } else {
             throw new IllegalArgumentException("No <path> element found in SVG.");
+        }
+    }*/
+
+    public static String extractPathData(InputStream svgStream) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(svgStream);
+
+        NodeList pathNodes = doc.getElementsByTagName("path");
+        if (pathNodes.getLength() > 0) {
+            Element pathElement = (Element) pathNodes.item(0);
+            return pathElement.getAttribute("d");
+        }
+        throw new IllegalArgumentException("No <path> element found in SVG");
+    }
+
+    public static String extractPathData(File svgFile) throws Exception {
+        try (InputStream is = new FileInputStream(svgFile)) {
+            return extractPathData(is);
         }
     }
 }

@@ -94,11 +94,11 @@ public class BackgroundTaskService {
     }
 
     // Progress-aware tasks
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void executeProgressTask(ProgressTask task) {
         executeTask(task, task::onSuccess, task::onError, task::onProgress);
     }
 
-    // Error handling
     private void handleUncaughtException(Throwable throwable) {
         Platform.runLater(() -> {
             System.err.println("Uncaught background error: " + throwable.getMessage());

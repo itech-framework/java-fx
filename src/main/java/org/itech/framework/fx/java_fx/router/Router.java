@@ -3,6 +3,7 @@ package org.itech.framework.fx.java_fx.router;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +24,7 @@ import java.util.Stack;
 
 public class Router {
     private final Map<String, Route> routes = new HashMap<>();
-    private final Stack<Route> navigationStack = new Stack<>();
+    private final Stack<NavigationState> navigationStack = new Stack<>();
     @Getter
     private final RouterConfig config = new RouterConfig();
     private Stage primaryStage;
@@ -84,9 +85,36 @@ public class Router {
     // Go back
     public void back() {
         if (navigationStack.size() > 1) {
-            navigationStack.pop();
-            Route previous = navigationStack.peek();
-            navigateTo(previous, null, false);
+            NavigationState currentState = navigationStack.pop();
+            NavigationState previousState = navigationStack.peek();
+
+            // Notify the current controller it's being left
+            if (currentState.controller() instanceof Routable) {
+                ((Routable) currentState.controller()).onReturn(previousState.arguments());
+            }
+
+            // Update scene to previous state's root
+            updateSceneRoot(previousState.root());
+            applyTransition(previousState.root(), previousState.route());
+
+            // Update current references
+            currentArguments = previousState.arguments();
+            currentRoot = previousState.root();
+            currentRoute = previousState.route();
+
+            // Notify the previous controller it's being resumed
+            if (previousState.controller() instanceof Routable) {
+                ((Routable) previousState.controller()).onResume();
+            }
+        }
+    }
+
+    public void pop(){
+        if (navigationStack.size() > 1) {
+            NavigationState currentState = navigationStack.pop();
+            NavigationState previousState = navigationStack.peek();
+
+            navigateTo(previousState.route, previousState.arguments, false);
         }
     }
 
@@ -101,16 +129,21 @@ public class Router {
                     primaryClass,
                     route.fxmlPath()
             );
+            Object controller = ComponentStore.getComponent(route.controllerClass());
 
             logger.debug("Page loaded.");
 
             updateSceneRoot(root);
-
             applyTransition(root, route);
 
-            handleControllerNavigation(route, arguments);
+            handleControllerNavigation(route, arguments, controller);
 
-            updateNavigationStack(route, replace);
+            // Update navigation stack
+            if (replace && !navigationStack.isEmpty()) {
+                navigationStack.pop();
+            }
+
+            navigationStack.push(new NavigationState(route, root, arguments, controller));
 
             currentArguments = arguments;
             currentRoot = root;
@@ -151,7 +184,6 @@ public class Router {
     }
 
     private void handleRefreshLifecycle(Object controller, Object arguments) {
-        // Call cleanup on old controller
         if (currentRoot != null) {
             Object oldController = ComponentStore.getComponent(currentRoute.controllerClass());
             if (oldController instanceof Routable) {
@@ -184,32 +216,36 @@ public class Router {
             boolean isDarkMode = Boolean.parseBoolean((String) DataStorageUtil.load(RouterConfig.getDarkModeKey()));
             if(isDarkMode){
                 primaryStage.getScene().getRoot().getStyleClass().add("dark-mode");
+                primaryStage.getScene().setFill(Color.BLACK);
             }else{
                 primaryStage.getScene().getRoot().getStyleClass().remove("dark-mode");
+                primaryStage.getScene().setFill(Color.WHITE);
             }
         }
     }
 
-    private void handleControllerNavigation(Route route, Object arguments) {
-        Object controller = ComponentStore.getComponent(route.controllerClass());
+    private void handleControllerNavigation(Route route, Object arguments, Object controller) {
         if (controller instanceof Routable) {
             ((Routable) controller).onNavigate(arguments);
         }
     }
 
-    private void updateNavigationStack(Route route, boolean replace) {
+    /*private void updateNavigationStack(Route route, boolean replace) {
         if (!replace) {
             navigationStack.push(route);
         }
-    }
+    }*/
 
     private boolean runMiddlewares(Route route, Object arguments) {
-        Route current = navigationStack.isEmpty() ? null : navigationStack.peek();
+        Route current = navigationStack.isEmpty() ? null : navigationStack.peek().route;
         for (Middleware middleware : config.getMiddlewares()) {
             if (!middleware.handle(current, route, arguments)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private record NavigationState(Route route, Parent root, Object arguments, Object controller) {
     }
 }

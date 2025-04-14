@@ -7,52 +7,41 @@ import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.itech.framework.fx.core.utils.DataStorageUtil;
+import org.itech.framework.fx.core.utils.validator.CommonValidator;
 import org.itech.framework.fx.java_fx.router.config.RouterConfig;
 import org.itech.framework.fx.java_fx.utils.SVGUtil;
+import org.itech.framework.fx.java_fx.utils.node.StyleUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class AlertDialog {
-    public enum Level {
-        ERROR("#dc3545", SVGUtil.ERROR_ICON_PATH, "Error"),
-        WARNING("#ffc107", SVGUtil.WARNING_ICON_PATH, "Warning"),
-        INFO("#17a2b8", SVGUtil.INFO_ICON_PATH, "Information"),
-        SUCCESS("#28a745", SVGUtil.SUCCESS_ICON_PATH, "Success");
-
-        final String color;
-        final String svgPath;
-        final String title;
-
-        Level(String color, String svgPath, String defaultTitle) {
-            this.color = color;
-            this.svgPath = svgPath;
-            this.title = defaultTitle;
-        }
-    }
 
     private final Stage dialogStage;
-    private final VBox container;
     private final StackPane rootPane;
-    private final HBox header;
-    private final Label titleLabel;
-    private final Label messageLabel;
     private final HBox buttonContainer;
+    private Stage ownerStage;
+    private Effect originalOwnerEffect;
+    private Paint originalFill;
 
     private static final Duration ANIMATION_DURATION = Duration.millis(300);
 
@@ -62,20 +51,20 @@ public class AlertDialog {
         dialogStage.initStyle(StageStyle.TRANSPARENT);
 
         // Main content container
-        container = new VBox(15);
+        VBox container = new VBox(15);
         container.setPadding(new Insets(20));
         container.getStyleClass().add("alert-container");
 
         // Create shadow wrapper
         rootPane = new StackPane(container);
-        rootPane.setPadding(new Insets(10));
+        rootPane.setPadding(new Insets(15));
         rootPane.setStyle("-fx-background-color: transparent;");
 
         // Configure rounded corners with shadow
         setupRoundedShadowEffect();
 
         // Header setup
-        header = new HBox(10);
+        HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
         // Icon using SVGUtil
@@ -88,13 +77,13 @@ public class AlertDialog {
         icon.getStyleClass().add("alert-icon");
 
         // Title
-        titleLabel = new Label(title != null ? title : level.title);
+        Label titleLabel = new Label(title != null ? title : level.title);
         titleLabel.getStyleClass().add("alert-title");
 
         header.getChildren().addAll(icon, titleLabel);
 
         // Message
-        messageLabel = new Label(message);
+        Label messageLabel = new Label(message);
         messageLabel.getStyleClass().add("alert-message");
         messageLabel.setWrapText(true);
         messageLabel.setMaxWidth(400);
@@ -114,11 +103,46 @@ public class AlertDialog {
         dialogStage.setScene(scene);
 
         if (owner != null) {
+            ownerStage = owner;
             dialogStage.initOwner(owner);
+            Scene ownerScene = owner.getScene();
+            if (ownerScene != null) {
+                Parent root = ownerScene.getRoot();
+                originalOwnerEffect = root.getEffect();
+                originalFill = ownerScene.getFill();
+                applyBlurEffect(root);
+            }
         }
 
         applyDarkMode();
+
         dialogStage.setOnShown(e -> playShowAnimation());
+        dialogStage.setOnHidden(e -> {
+            if (owner != null) {
+                Scene ownerScene = owner.getScene();
+                if (ownerScene != null) {
+                    Parent root = ownerScene.getRoot();
+                    ownerScene.setFill(originalFill);
+                    restoreOwnerEffect(root);
+                }
+            }
+        });
+    }
+
+    public void applyFonts(List<String> fontFamilies) {
+        if (CommonValidator.validList(fontFamilies)) {
+            Node rootNode = dialogStage.getScene().getRoot();
+            StyleUtils.setFontFamily(rootNode, fontFamilies);
+        }
+    }
+
+    private void applyBlurEffect(Node node) {
+        GaussianBlur blur = new GaussianBlur(10);
+        node.setEffect(blur);
+    }
+
+    private void restoreOwnerEffect(Node node) {
+        node.setEffect(originalOwnerEffect);
     }
 
     private void playShowAnimation() {
@@ -179,8 +203,10 @@ public class AlertDialog {
         if (darkModeValue != null) {
             boolean isDarkMode = Boolean.parseBoolean(darkModeValue.toString());
             rootPane.getStyleClass().remove("dark-mode");
+            ownerStage.getScene().setFill(Color.WHITE);
             if (isDarkMode) {
                 rootPane.getStyleClass().add("dark-mode");
+                ownerStage.getScene().setFill(Color.BLACK);
             }
         }
     }
@@ -206,6 +232,7 @@ public class AlertDialog {
         private final List<Button> buttons = new ArrayList<>();
         private Stage owner;
         private AlertDialog dialog;
+        private final List<String> customFonts = new ArrayList<>();
 
         public AlertDialogBuilder level(Level level) {
             this.level = level;
@@ -249,14 +276,26 @@ public class AlertDialog {
             return this;
         }
 
+        public AlertDialogBuilder customFonts(String... fontFamilies){
+            if(fontFamilies != null){
+                for(String font: fontFamilies){
+                    if(customFonts.contains(font)) continue;
+                    customFonts.add(font);
+                }
+            }
+            return this;
+        }
+
         public AlertDialog build() {
             dialog = new AlertDialog(level, title, message, owner);
-
             if (buttons.isEmpty()) {
                 dialog.buttonContainer.getChildren().add(createDefaultButton());
             } else {
                 dialog.buttonContainer.getChildren().addAll(buttons);
             }
+
+            // apply font
+            dialog.applyFonts(customFonts);
 
             return dialog;
         }
@@ -274,4 +313,22 @@ public class AlertDialog {
             }
         }
     }
+
+    public enum Level {
+        ERROR("#dc3545", SVGUtil.ERROR_ICON_PATH, "Error"),
+        WARNING("#ffc107", SVGUtil.WARNING_ICON_PATH, "Warning"),
+        INFO("#17a2b8", SVGUtil.INFO_ICON_PATH, "Information"),
+        SUCCESS("#28a745", SVGUtil.SUCCESS_ICON_PATH, "Success");
+
+        final String color;
+        final String svgPath;
+        final String title;
+
+        Level(String color, String svgPath, String defaultTitle) {
+            this.color = color;
+            this.svgPath = svgPath;
+            this.title = defaultTitle;
+        }
+    }
+
 }

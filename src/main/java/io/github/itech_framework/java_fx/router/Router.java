@@ -1,252 +1,292 @@
 package io.github.itech_framework.java_fx.router;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import io.github.itech_framework.core.store.ComponentStore;
+import io.github.itech_framework.core.utils.DataStorageUtil;
+import io.github.itech_framework.java_fx.loader.FxControllerLoader;
+import io.github.itech_framework.java_fx.loader.FxControllerLoader.Result;
+import io.github.itech_framework.java_fx.router.config.Middleware;
+import io.github.itech_framework.java_fx.router.config.RouteMiddleware;
+import io.github.itech_framework.java_fx.router.config.RouterConfig;
+import io.github.itech_framework.java_fx.router.config.TransitionEffect;
+import io.github.itech_framework.java_fx.router.core.MiddlewareResult;
+import io.github.itech_framework.java_fx.router.core.Routable;
+import io.github.itech_framework.java_fx.router.core.Route;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.github.itech_framework.core.store.ComponentStore;
-import io.github.itech_framework.core.utils.DataStorageUtil;
-import io.github.itech_framework.java_fx.loader.FxControllerLoader;
-import io.github.itech_framework.java_fx.router.config.Middleware;
-import io.github.itech_framework.java_fx.router.config.RouterConfig;
-import io.github.itech_framework.java_fx.router.config.TransitionEffect;
-import io.github.itech_framework.java_fx.router.core.Routable;
-import io.github.itech_framework.java_fx.router.core.Route;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
 
 public class Router {
-    private final Map<String, Route> routes = new HashMap<>();
-    private final Stack<NavigationState> navigationStack = new Stack<>();
-    @Getter
-    private final RouterConfig config = new RouterConfig();
-    private Stage primaryStage;
-    private Class<?> primaryClass;
-    private Object currentArguments;
-    private Route currentRoute;
-    private Parent currentRoot;
+	private final Map<String, Route> routes = new HashMap<>();
+	private final Stack<NavigationState> navigationStack = new Stack<>();
+	@Getter
+	private final RouterConfig config = new RouterConfig();
+	private Stage primaryStage;
+	private Class<?> primaryClass;
+	@Getter
+	private Object currentArguments;
+	private Route currentRoute;
+	private Parent currentRoot;
 
-    private static final Logger logger = LogManager.getLogger(Router.class);
+	private static final Logger logger = LogManager.getLogger(Router.class);
 
-    public void initialize(Class<?> clazz, Stage stage) {
-        this.primaryClass = clazz;
-        this.primaryStage = stage;
-        Scene rootScene = new Scene(new StackPane());
-        config.addStyleSheets(Objects.requireNonNull(getClass().getResource("/static/css/style.css")).toExternalForm());
-        primaryStage.setScene(rootScene);
-    }
+	public void initialize(Class<?> clazz, Stage stage) {
+		this.primaryClass = clazz;
+		this.primaryStage = stage;
+		Scene rootScene = new Scene(new StackPane());
+		config.addStyleSheets(Objects.requireNonNull(getClass().getResource("/static/css/style.css")).toExternalForm());
+		primaryStage.setScene(rootScene);
+	}
 
-    public void registerRoute(Route route) {
-        routes.put(route.name(), route);
-    }
+	public void registerRoute(Route route) {
+		routes.put(route.name(), route);
+	}
 
-    public void registerRoute(String name, String fxmlPath, Class<?> controllerClass) {
-        routes.put(name, new Route(name, fxmlPath, controllerClass));
-    }
+	public void registerRoute(String name, String fxmlPath, Class<?> controllerClass) {
+		routes.put(name, new Route(name, fxmlPath, controllerClass));
+	}
 
-    public void registerRoute(String name, String fxmlPath, Class<?> controllerClass, String transitionName) {
-        routes.put(name, new Route(name, fxmlPath, controllerClass).withTransition(transitionName));
-    }
+	public void registerRoute(String name, String fxmlPath, Class<?> controllerClass, String transitionName) {
+		routes.put(name, new Route(name, fxmlPath, controllerClass).withTransition(transitionName));
+	}
 
-    // Basic navigation
-    public void to(String routeName) {
-        to(routeName, null);
-    }
+	// Basic navigation
+	public void to(String routeName) {
+		to(routeName, null);
+	}
 
-    public void to(String routeName, Object arguments) {
-        Route route = routes.get(routeName);
-        if (route == null) throw new IllegalArgumentException("Route not registered: " + routeName);
-        navigateTo(route, arguments, false);
-    }
+	public void to(String routeName, Object arguments) {
+		Route route = routes.get(routeName);
+		if (route == null)
+			throw new IllegalArgumentException("Route not registered: " + routeName);
+		navigateTo(route, arguments, false);
+	}
 
-    // Replace current screen
-    public void off(String routeName) {
-        off(routeName, null);
-    }
+	// Replace current screen
+	public void off(String routeName) {
+		off(routeName, null);
+	}
 
-    public void off(String routeName, Object arguments) {
-        Route route = routes.get(routeName);
-        navigateTo(route, arguments, true);
-    }
+	public void off(String routeName, Object arguments) {
+		Route route = routes.get(routeName);
+		navigateTo(route, arguments, true);
+	}
 
-    // Clear all and start new
-    public void offAll(String routeName) {
-        navigationStack.clear();
-        to(routeName);
-    }
+	// Clear all and start new
+	public void offAll(String routeName) {
+		navigationStack.clear();
+		to(routeName);
+	}
 
-    // Go back
-    public void back() {
-        if (navigationStack.size() > 1) {
-            NavigationState currentState = navigationStack.pop();
-            NavigationState previousState = navigationStack.peek();
+	// Go back
+	public void back() {
+		if (navigationStack.size() > 1) {
+			NavigationState currentState = navigationStack.pop();
+			NavigationState previousState = navigationStack.peek();
 
-            // Notify the current controller it's being left
-            if (currentState.controller() instanceof Routable) {
-                ((Routable) currentState.controller()).onReturn(previousState.arguments());
-            }
+			// Notify the current controller it's being left
+			if (currentState.controller() instanceof Routable) {
+				((Routable) currentState.controller()).onReturn(previousState.arguments());
+			}
 
-            // Update scene to previous state's root
-            updateSceneRoot(previousState.root());
-            applyTransition(previousState.root(), previousState.route());
+			// Update scene to previous state's root
+			updateSceneRoot(previousState.root());
+			applyTransition(previousState.root(), previousState.route());
 
-            // Update current references
-            currentArguments = previousState.arguments();
-            currentRoot = previousState.root();
-            currentRoute = previousState.route();
+			// Update current references
+			currentArguments = previousState.arguments();
+			currentRoot = previousState.root();
+			currentRoute = previousState.route();
 
-            // Notify the previous controller it's being resumed
-            if (previousState.controller() instanceof Routable) {
-                ((Routable) previousState.controller()).onResume();
-            }
-        }
-    }
+			// Notify the previous controller it's being resumed
+			if (previousState.controller() instanceof Routable) {
+				((Routable) previousState.controller()).onResume();
+			}
+		}
+	}
 
-    public void pop(){
-        if (navigationStack.size() > 1) {
-            NavigationState currentState = navigationStack.pop();
-            NavigationState previousState = navigationStack.peek();
+	public void pop() {
+		if (navigationStack.size() > 1) {
+			navigationStack.pop();
+			NavigationState previousState = navigationStack.peek();
 
-            navigateTo(previousState.route, previousState.arguments, false);
-        }
-    }
+			navigateTo(previousState.route, previousState.arguments, false);
+		}
+	}
 
-    private void navigateTo(Route route, Object arguments, boolean replace) {
-        logger.debug("Navigating to {}", route.name());
-        try {
-            if (!runMiddlewares(route, arguments)) return;
+	private void navigateTo(Route route, Object arguments, boolean replace) {
+		logger.debug("Navigating to {}", route.name());
+		try {
+			if (!runMiddlewares(route, arguments)) {
+				return;
+			}
 
-            logger.debug("Loading page...");
+			MiddlewareResult result = runRouteMiddlewares(route, arguments);
 
-            Parent root = FxControllerLoader.load(
-                    primaryClass,
-                    route.fxmlPath()
-            );
-            Object controller = ComponentStore.getComponent(route.controllerClass());
+			if (!result.shouldProceed()) {
+				handleMiddlewareFailure(result);
+				return;
+			}
 
-            logger.debug("Page loaded.");
+			logger.debug("Loading page... " + arguments);
 
-            updateSceneRoot(root);
-            applyTransition(root, route);
+			Result<Parent> loadedResult = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+			Parent root = loadedResult.getRoot();
+			Object controller = loadedResult.getController();
+			
+			logger.debug("Page loaded.");
 
-            handleControllerNavigation(route, arguments, controller);
+			updateSceneRoot(root);
+			applyTransition(root, route);
 
-            // Update navigation stack
-            if (replace && !navigationStack.isEmpty()) {
-                navigationStack.pop();
-            }
+			handleControllerNavigation(route, arguments, controller);
 
-            navigationStack.push(new NavigationState(route, root, arguments, controller));
+			// Update navigation stack
+			if (replace && !navigationStack.isEmpty()) {
+				navigationStack.pop();
+			}
 
-            currentArguments = arguments;
-            currentRoot = root;
-            currentRoute = route;
-            logger.debug("Navigated to {}", route.name());
-        } catch (Exception e) {
-            logger.error("Navigation failed: {}", e.getMessage());
-            throw new RuntimeException("Navigation failed: " + e.getMessage(), e);
-        }
-    }
+			navigationStack.push(new NavigationState(route, root, arguments, controller));
 
-    public void refresh() {
-        refresh(currentArguments);
-    }
+			currentArguments = arguments;
+			currentRoot = root;
+			currentRoute = route;
+			logger.debug("Navigated to {}", route.name());
+		} catch (Exception e) {
+			logger.error("Navigation failed: {}", e.getMessage());
+			throw new RuntimeException("Navigation failed: " + e.getMessage(), e);
+		}
+	}
 
-    public void refresh(Object newArguments) {
-        if (currentRoute == null) return;
-        try {
-            Parent newRoot = FxControllerLoader.load(
-                    primaryClass,
-                    currentRoute.fxmlPath()
-            );
+	public void refresh() {
+		refresh(currentArguments);
+	}
 
-            Object newController = ComponentStore.getComponent(currentRoute.controllerClass());
+	public void refresh(Object newArguments) {
+		if (currentRoute == null)
+			return;
+		try {
+			Result<Parent> loadedResult = FxControllerLoader.loadWithResult(primaryClass, currentRoute.fxmlPath());
+			Parent newRoot = loadedResult.getRoot();
+			Object newController = loadedResult.getController();
 
-            handleRefreshLifecycle(newController, newArguments);
+			handleRefreshLifecycle(newController, newArguments);
 
-            // Update view
-            updateSceneRoot(newRoot);
-            applyTransition(newRoot, currentRoute);
+			// Update view
+			updateSceneRoot(newRoot);
+			applyTransition(newRoot, currentRoute);
 
-            // Update references
-            currentRoot = newRoot;
-            currentArguments = newArguments;
+			// Update references
+			currentRoot = newRoot;
+			currentArguments = newArguments;
 
-        } catch (Exception e) {
-            throw new RuntimeException("Refresh failed", e);
-        }
-    }
+		} catch (Exception e) {
+			throw new RuntimeException("Refresh failed", e);
+		}
+	}
 
-    private void handleRefreshLifecycle(Object controller, Object arguments) {
-        if (currentRoot != null) {
-            Object oldController = ComponentStore.getComponent(currentRoute.controllerClass());
-            if (oldController instanceof Routable) {
-                ((Routable) oldController).onReturn(null);
-            }
-        }
+	private void handleRefreshLifecycle(Object controller, Object arguments) {
+		if (currentRoot != null) {
+			Object oldController = ComponentStore.getComponent(currentRoute.controllerClass());
+			if (oldController instanceof Routable) {
+				((Routable) oldController).onReturn(null);
+			}
+		}
 
-        if (controller instanceof Routable routable) {
-            routable.onNavigate(arguments);
-            routable.refresh();
-        }
-    }
+		if (controller instanceof Routable routable) {
+			routable.onNavigate(arguments);
+			routable.refresh();
+		}
+	}
 
-    private void applyTransition(Parent root, Route route) {
-        TransitionEffect effect = config.getTransition(route.transitionName());
-        if (effect != null) {
-            effect.apply(root);
-        }
-    }
+	private void applyTransition(Parent root, Route route) {
+		TransitionEffect effect = config.getTransition(route.transitionName());
+		if (effect != null) {
+			effect.apply(root);
+		}
+	}
 
-    private void updateSceneRoot(Parent root) {
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        primaryStage.getScene().getStylesheets().addAll(getConfig().getStyleSheets());
-        // check for dark mode
-        if(DataStorageUtil.load(RouterConfig.getDarkModeKey())!=null){
-            boolean isDarkMode = Boolean.parseBoolean((String) DataStorageUtil.load(RouterConfig.getDarkModeKey()));
-            if(isDarkMode){
-                primaryStage.getScene().getRoot().getStyleClass().add("dark-mode");
-                primaryStage.getScene().setFill(Color.BLACK);
-            }else{
-                primaryStage.getScene().getRoot().getStyleClass().remove("dark-mode");
-                primaryStage.getScene().setFill(Color.WHITE);
-            }
-        }
-    }
+	private void updateSceneRoot(Parent root) {
+		if (primaryStage.getScene() == null) {
+			primaryStage.setScene(new Scene(root));
+		} else {
+			primaryStage.getScene().setRoot(root);
+		}
+		primaryStage.getScene().getStylesheets().addAll(getConfig().getStyleSheets());
+		// check for dark mode
+		if (DataStorageUtil.load(RouterConfig.getDarkModeKey()) != null) {
+			boolean isDarkMode = Boolean.parseBoolean((String) DataStorageUtil.load(RouterConfig.getDarkModeKey()));
+			if (isDarkMode) {
+				primaryStage.getScene().getRoot().getStyleClass().add("dark-mode");
+				primaryStage.getScene().setFill(Color.BLACK);
+			} else {
+				primaryStage.getScene().getRoot().getStyleClass().remove("dark-mode");
+				primaryStage.getScene().setFill(Color.WHITE);
+			}
+		}
+	}
 
-    private void handleControllerNavigation(Route route, Object arguments, Object controller) {
-        if (controller instanceof Routable) {
-            ((Routable) controller).onNavigate(arguments);
-        }
-    }
+	private void handleControllerNavigation(Route route, Object arguments, Object controller) {
+		if (controller instanceof Routable) {
+			((Routable) controller).onNavigate(arguments);
+		}
+	}
 
-    /*private void updateNavigationStack(Route route, boolean replace) {
-        if (!replace) {
-            navigationStack.push(route);
-        }
-    }*/
+	/*
+	 * private void updateNavigationStack(Route route, boolean replace) { if
+	 * (!replace) { navigationStack.push(route); } }
+	 */
 
-    private boolean runMiddlewares(Route route, Object arguments) {
-        Route current = navigationStack.isEmpty() ? null : navigationStack.peek().route;
-        for (Middleware middleware : config.getMiddlewares()) {
-            if (!middleware.handle(current, route, arguments)) {
-                return false;
-            }
-        }
-        return true;
-    }
+	@SuppressWarnings("deprecation")
+	private boolean runMiddlewares(Route route, Object arguments) {
+		Route current = navigationStack.isEmpty() ? null : navigationStack.peek().route;
+		for (Middleware middleware : config.getMiddlewares()) {
+			if (!middleware.handle(current, route, arguments)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    private record NavigationState(Route route, Parent root, Object arguments, Object controller) {
-    }
+	private MiddlewareResult runRouteMiddlewares(Route route, Object arguments) {
+		Route current = navigationStack.isEmpty() ? null : navigationStack.peek().route;
+		for (RouteMiddleware middleware : config.getRouteMiddleWares()) {
+			MiddlewareResult result = middleware.handle(current, route, arguments);
+			if (!result.shouldProceed()) {
+				return result;
+			}
+		}
+		return MiddlewareResult.proceed();
+	}
+
+	private void handleMiddlewareFailure(MiddlewareResult result) {
+		logger.debug("Middleware blocked navigation");
+
+		if (result.getRedirectTo() != null) {
+			logger.debug("Redirecting to: {}", result.getRedirectTo());
+			this.to(result.getRedirectTo(), result.getRedirectArguments());
+			return;
+		}
+
+		if (result.getOnFailureCallback() != null) {
+			logger.debug("Executing middleware failure callback");
+			result.getOnFailureCallback().run();
+			return;
+		}
+
+		logger.debug("Navigation blocked by middleware");
+	}
+
+	private record NavigationState(Route route, Parent root, Object arguments, Object controller) {
+	}
 }

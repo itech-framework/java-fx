@@ -1,32 +1,29 @@
 package io.github.itech_framework.java_fx.router.config;
 
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.itech_framework.java_fx.exceptions.DuplicateConfigKey;
+import io.github.itech_framework.java_fx.ui.layout.LayoutConfig;
+
 public class RouterConfig {
-    @Getter
     @Deprecated
     private final List<Middleware> middlewares = new ArrayList<>();
     
-    @Getter
     private final List<RouteMiddleware> routeMiddleWares = new ArrayList<RouteMiddleware>();
     
     private final Map<String, TransitionEffect> transitions = new HashMap<>();
 
-    @Getter
-    @Setter
     private static String darkModeKey = "isDarkMode";
 
-    @Getter
     private final List<String> styleSheets = new ArrayList<>();
 
-    @Setter
     private TransitionEffect defaultTransition = root -> {};
+    
+    private final Map<String, LayoutConfig> layoutConfigs = new HashMap<>();
 
     /**
      * Adds a legacy middleware to the router configuration.
@@ -114,7 +111,17 @@ public class RouterConfig {
     }
 
     public void addTransition(String name, TransitionEffect effect) {
+    	if(transitions.containsKey(name)) throw new DuplicateConfigKey(name);
         transitions.put(name, effect);
+    }
+    
+    public void addLayoutConfig(String name, LayoutConfig config) {
+    	if(layoutConfigs.containsKey(name)) throw new DuplicateConfigKey(name);
+    	layoutConfigs.put(name, config);
+    }
+    
+    public LayoutConfig getLayout(String name) {
+    	return layoutConfigs.getOrDefault(name, null);
     }
 
     public void addStyleSheets(String cssPath){
@@ -125,5 +132,36 @@ public class RouterConfig {
         return transitions.getOrDefault(name, defaultTransition);
     }
 
+	public static String getDarkModeKey() {
+		return darkModeKey;
+	}
+
+	public static void setDarkModeKey(String darkModeKey) {
+		RouterConfig.darkModeKey = darkModeKey;
+	}
+
+	public TransitionEffect getDefaultTransition() {
+		return defaultTransition;
+	}
+
+	public void setDefaultTransition(TransitionEffect defaultTransition) {
+		this.defaultTransition = defaultTransition;
+	}
+
+	public List<Middleware> getMiddlewares() {
+		return middlewares;
+	}
+
+	public List<RouteMiddleware> getRouteMiddleWares() {
+		return routeMiddleWares;
+	}
+
+	public Map<String, TransitionEffect> getTransitions() {
+		return transitions;
+	}
+
+	public List<String> getStyleSheets() {
+		return styleSheets;
+	}
 
 }

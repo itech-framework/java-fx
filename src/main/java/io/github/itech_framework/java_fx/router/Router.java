@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.itech_framework.core.store.ComponentStore;
 import io.github.itech_framework.core.utils.DataStorageUtil;
+import io.github.itech_framework.core.utils.validator.CommonValidator;
 import io.github.itech_framework.java_fx.loader.FxControllerLoader;
 import io.github.itech_framework.java_fx.loader.FxControllerLoader.Result;
 import io.github.itech_framework.java_fx.router.config.Middleware;
@@ -19,8 +20,12 @@ import io.github.itech_framework.java_fx.router.config.TransitionEffect;
 import io.github.itech_framework.java_fx.router.core.MiddlewareResult;
 import io.github.itech_framework.java_fx.router.core.Routable;
 import io.github.itech_framework.java_fx.router.core.Route;
+import io.github.itech_framework.java_fx.ui.layout.LayoutConfig;
+import io.github.itech_framework.java_fx.ui.layout.LayoutController;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -53,11 +58,26 @@ public class Router {
 	}
 
 	public void registerRoute(String name, String fxmlPath, Class<?> controllerClass) {
-		routes.put(name, new Route(name, fxmlPath, controllerClass));
+		registerRoute(name, fxmlPath, controllerClass, null, null);
 	}
 
 	public void registerRoute(String name, String fxmlPath, Class<?> controllerClass, String transitionName) {
-		routes.put(name, new Route(name, fxmlPath, controllerClass).withTransition(transitionName));
+		registerRoute(name, fxmlPath, controllerClass, transitionName, null);
+	}
+
+	public void registerRoute(String name, String fxmlPath, Class<?> controllerClass, String transitionName,
+			String layout) {
+		Route r = new Route(name, fxmlPath, controllerClass);
+
+		if (CommonValidator.validString(transitionName) && CommonValidator.validString(layout)) {
+			r = r.withTransition(transitionName).withLayout(layout);
+		} else if (CommonValidator.validString(transitionName)) {
+			r = r.withTransition(transitionName);
+		} else if (CommonValidator.validString(layout)) {
+			r = r.withLayout(layout);
+		}
+
+		routes.put(name, r);
 	}
 
 	// Basic navigation
@@ -140,10 +160,11 @@ public class Router {
 
 			logger.debug("Loading page... " + arguments);
 
-			Result<Parent> loadedResult = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
-			Parent root = loadedResult.getRoot();
-			Object controller = loadedResult.getController();
-			
+			// Use layout-aware loading
+			LoadResult loadedResult = loadWithLayout(route, arguments);
+			Parent root = loadedResult.root();
+			Object controller = loadedResult.controller();
+
 			logger.debug("Page loaded.");
 
 			updateSceneRoot(root);
@@ -168,6 +189,53 @@ public class Router {
 		}
 	}
 
+	private LoadResult loadWithLayout(Route route, Object arguments) throws Exception {
+		String layoutName = route.layout();
+
+		if (!CommonValidator.validString(layoutName)) {
+			Result<Parent> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+			return new LoadResult(result.getRoot(), result.getController(), false);
+		}
+
+		LayoutConfig layoutConfig = config.getLayout(layoutName);
+		if (layoutConfig == null) {
+			throw new RuntimeException("Layout not found: " + layoutName);
+		}
+
+		if (!layoutConfig.isEnabled()) {
+			Result<Parent> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+			return new LoadResult(result.getRoot(), result.getController(), false);
+		}
+
+		Result<Parent> layoutResult = FxControllerLoader.loadWithResult(primaryClass, layoutConfig.getLayoutFxml());
+		Parent layoutRoot = layoutResult.getRoot();
+		Object layoutController = layoutResult.getController();
+
+		// Load the content
+		Result<Parent> contentResult = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+		Parent contentRoot = contentResult.getRoot();
+		Object contentController = contentResult.getController();
+
+		if (layoutController instanceof LayoutController) {
+			((LayoutController) layoutController).setContent(contentRoot);
+		} else {
+			// Fallback: look for the container by ID
+			Node container = layoutRoot.lookup("#" + layoutConfig.getContentContainerId());
+			if (container instanceof Pane) {
+				((Pane) container).getChildren().add(contentRoot);
+			} else {
+				throw new RuntimeException(
+						"Layout container not found or not a Pane: " + layoutConfig.getContentContainerId());
+			}
+		}
+
+		if (layoutController instanceof LayoutController) {
+			((LayoutController) layoutController).onLayoutLoaded();
+		}
+
+		return new LoadResult(layoutRoot, contentController, true);
+	}
+
 	public void refresh() {
 		refresh(currentArguments);
 	}
@@ -176,9 +244,9 @@ public class Router {
 		if (currentRoute == null)
 			return;
 		try {
-			Result<Parent> loadedResult = FxControllerLoader.loadWithResult(primaryClass, currentRoute.fxmlPath());
-			Parent newRoot = loadedResult.getRoot();
-			Object newController = loadedResult.getController();
+			LoadResult loadedResult = loadWithLayout(currentRoute, newArguments);
+			Parent newRoot = loadedResult.root();
+			Object newController = loadedResult.controller();
 
 			handleRefreshLifecycle(newController, newArguments);
 
@@ -242,12 +310,6 @@ public class Router {
 		}
 	}
 
-	/*
-	 * private void updateNavigationStack(Route route, boolean replace) { if
-	 * (!replace) { navigationStack.push(route); } }
-	 */
-
-	@SuppressWarnings("deprecation")
 	private boolean runMiddlewares(Route route, Object arguments) {
 		Route current = navigationStack.isEmpty() ? null : navigationStack.peek().route;
 		for (Middleware middleware : config.getMiddlewares()) {
@@ -287,6 +349,10 @@ public class Router {
 		logger.debug("Navigation blocked by middleware");
 	}
 
+	// Helper records
 	private record NavigationState(Route route, Parent root, Object arguments, Object controller) {
+	}
+
+	private record LoadResult(Parent root, Object controller, boolean usesLayout) {
 	}
 }

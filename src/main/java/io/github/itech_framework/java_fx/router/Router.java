@@ -193,7 +193,7 @@ public class Router {
 		String layoutName = route.layout();
 
 		if (!CommonValidator.validString(layoutName)) {
-			Result<Parent> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+			Result<Parent, ?> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
 			return new LoadResult(result.getRoot(), result.getController(), false);
 		}
 
@@ -203,16 +203,16 @@ public class Router {
 		}
 
 		if (!layoutConfig.isEnabled()) {
-			Result<Parent> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+			Result<Parent, ?> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
 			return new LoadResult(result.getRoot(), result.getController(), false);
 		}
 
-		Result<Parent> layoutResult = FxControllerLoader.loadWithResult(primaryClass, layoutConfig.getLayoutFxml());
+		Result<Parent, ?> layoutResult = FxControllerLoader.loadWithResult(primaryClass, layoutConfig.getLayoutFxml());
 		Parent layoutRoot = layoutResult.getRoot();
 		Object layoutController = layoutResult.getController();
 
 		// Load the content
-		Result<Parent> contentResult = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
+		Result<Parent, ?> contentResult = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
 		Parent contentRoot = contentResult.getRoot();
 		Object contentController = contentResult.getController();
 

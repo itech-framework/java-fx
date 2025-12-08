@@ -45,6 +45,8 @@ public class ModalDialog {
 
     private static final Duration ANIMATION_DURATION = Duration.millis(300);
 
+    private static ModalDialog currentDialog;
+    
     public static ModalDialogBuilder builder(){
         return new ModalDialogBuilder();
     }
@@ -102,6 +104,7 @@ public class ModalDialog {
                 }
             }
         });
+        currentDialog = this;
     }
 
     private void setupRoundedShadowEffect() {
@@ -276,7 +279,17 @@ public class ModalDialog {
         private void closeDialog() {
             if (dialog != null) {
                 dialog.close();
+                currentDialog = null;
             }
         }
     }
+
+	public static ModalDialog getCurrentDialog() {
+		return currentDialog;
+	}
+
+	public static void setCurrentDialog(ModalDialog currentDialog) {
+		ModalDialog.currentDialog = currentDialog;
+	}
+    
 }

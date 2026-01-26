@@ -396,3 +396,370 @@
 .root.dark-mode .alert-default-button:hover {
     -fx-background-color: derive(-fx-primary, 10%);
 }
+
+
+/* Toast Styles - Using Root Color Variables */
+.toast-container {
+    -fx-background-color: -fx-base;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: -fx-border-base;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 3);
+}
+
+.toast-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-color;
+}
+
+.toast-message {
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+    -fx-text-fill: -fx-text-color;
+}
+
+.toast-icon {
+    -fx-opacity: 0.9;
+}
+
+.toast-close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-disabled;
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+    -fx-cursor: hand;
+}
+
+.toast-close-button:hover {
+    -fx-text-fill: -fx-text-color;
+    -fx-background-color: derive(-fx-border-base, 80%);
+    -fx-background-radius: 10px;
+}
+
+.toast-close-button:pressed {
+    -fx-background-color: derive(-fx-border-base, 70%);
+}
+
+/* Toast type backgrounds using root color palette */
+.toast-info {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-info, 90%), derive(-fx-info, 85%));
+    -fx-border-color: derive(-fx-info, 30%);
+    -fx-text-fill: derive(-fx-dark, -30%);
+}
+
+.toast-success {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-success, 90%), derive(-fx-success, 85%));
+    -fx-border-color: derive(-fx-success, 30%);
+    -fx-text-fill: derive(-fx-dark, -30%);
+}
+
+.toast-warning {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-warning, 90%), derive(-fx-warning, 85%));
+    -fx-border-color: derive(-fx-warning, 30%);
+    -fx-text-fill: derive(-fx-dark, -30%);
+}
+
+.toast-error {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-danger, 90%), derive(-fx-danger, 85%));
+    -fx-border-color: derive(-fx-danger, 30%);
+    -fx-text-fill: derive(-fx-dark, -30%);
+}
+
+/* Toast type specific text colors */
+.toast-info .toast-title,
+.toast-info .toast-message {
+    -fx-text-fill: derive(-fx-dark, -40%);
+}
+
+.toast-success .toast-title,
+.toast-success .toast-message {
+    -fx-text-fill: derive(-fx-dark, -40%);
+}
+
+.toast-warning .toast-title,
+.toast-warning .toast-message {
+    -fx-text-fill: derive(-fx-dark, -40%);
+}
+
+.toast-error .toast-title,
+.toast-error .toast-message {
+    -fx-text-fill: derive(-fx-dark, -40%);
+}
+
+/* Primary and Secondary toast types (using your primary/secondary colors) */
+.toast-primary {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-primary, 90%), derive(-fx-primary, 85%));
+    -fx-border-color: derive(-fx-primary, 30%);
+}
+
+.toast-secondary {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-secondary, 90%), derive(-fx-secondary, 85%));
+    -fx-border-color: derive(-fx-secondary, 30%);
+}
+
+/* Dark mode adjustments */
+.root.dark-mode .toast-container {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-border-base;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
+}
+
+.root.dark-mode .toast-title {
+    -fx-text-fill: -fx-text-color;
+}
+
+.root.dark-mode .toast-message {
+    -fx-text-fill: -fx-text-color;
+}
+
+.root.dark-mode .toast-close-button {
+    -fx-text-fill: -fx-disabled;
+}
+
+.root.dark-mode .toast-close-button:hover {
+    -fx-text-fill: -fx-text-color;
+    -fx-background-color: derive(-fx-border-base, -20%);
+}
+
+/* Dark mode toast type backgrounds */
+.root.dark-mode .toast-info {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(0, 188, 212, 0.15), 
+        rgba(0, 188, 212, 0.1));
+    -fx-border-color: rgba(0, 188, 212, 0.3);
+}
+
+.root.dark-mode .toast-success {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(139, 195, 74, 0.15), 
+        rgba(139, 195, 74, 0.1));
+    -fx-border-color: rgba(139, 195, 74, 0.3);
+}
+
+.root.dark-mode .toast-warning {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(255, 193, 7, 0.15), 
+        rgba(255, 193, 7, 0.1));
+    -fx-border-color: rgba(255, 193, 7, 0.3);
+}
+
+.root.dark-mode .toast-error {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(255, 82, 82, 0.15), 
+        rgba(255, 82, 82, 0.1));
+    -fx-border-color: rgba(255, 82, 82, 0.3);
+}
+
+.root.dark-mode .toast-primary {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(33, 150, 243, 0.15), 
+        rgba(33, 150, 243, 0.1));
+    -fx-border-color: rgba(33, 150, 243, 0.3);
+}
+
+.root.dark-mode .toast-secondary {
+    -fx-background-color: linear-gradient(to bottom, 
+        rgba(76, 175, 80, 0.15), 
+        rgba(76, 175, 80, 0.1));
+    -fx-border-color: rgba(76, 175, 80, 0.3);
+}
+
+/* Dark mode - text colors for toast types */
+.root.dark-mode .toast-info .toast-title,
+.root.dark-mode .toast-info .toast-message {
+    -fx-text-fill: -fx-info;
+}
+
+.root.dark-mode .toast-success .toast-title,
+.root.dark-mode .toast-success .toast-message {
+    -fx-text-fill: -fx-success;
+}
+
+.root.dark-mode .toast-warning .toast-title,
+.root.dark-mode .toast-warning .toast-message {
+    -fx-text-fill: -fx-warning;
+}
+
+.root.dark-mode .toast-error .toast-title,
+.root.dark-mode .toast-error .toast-message {
+    -fx-text-fill: -fx-danger;
+}
+
+.root.dark-mode .toast-primary .toast-title,
+.root.dark-mode .toast-primary .toast-message {
+    -fx-text-fill: -fx-primary;
+}
+
+.root.dark-mode .toast-secondary .toast-title,
+.root.dark-mode .toast-secondary .toast-message {
+    -fx-text-fill: -fx-secondary;
+}
+
+/* Animation effects for toast */
+@keyframes toastFadeIn {
+    from {
+        -fx-opacity: 0;
+        -fx-translate-y: 20;
+    }
+    to {
+        -fx-opacity: 1;
+        -fx-translate-y: 0;
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        -fx-opacity: 1;
+        -fx-translate-y: 0;
+    }
+    to {
+        -fx-opacity: 0;
+        -fx-translate-y: -20;
+    }
+}
+
+.toast-animate-in {
+    -fx-animation: toastFadeIn 300ms ease-out;
+}
+
+.toast-animate-out {
+    -fx-animation: toastFadeOut 200ms ease-in;
+}
+
+/* Stacking toast notifications */
+.toast-stacked {
+    -fx-margin-bottom: 10px;
+}
+
+/* Toast with progress bar */
+.toast-progress-bar {
+    -fx-accent: -fx-primary;
+    -fx-background-color: derive(-fx-border-base, 90%);
+}
+
+.root.dark-mode .toast-progress-bar {
+    -fx-background-color: derive(-fx-border-base, -20%);
+}
+
+/* Compact toast variant */
+.toast-compact {
+    -fx-padding: 10px;
+    -fx-max-width: 250px;
+}
+
+.toast-compact .toast-title {
+    -fx-font-size: 13px;
+}
+
+.toast-compact .toast-message {
+    -fx-font-size: 12px;
+}
+
+/* Large toast variant */
+.toast-large {
+    -fx-padding: 20px;
+    -fx-max-width: 450px;
+}
+
+.toast-large .toast-title {
+    -fx-font-size: 16px;
+}
+
+.toast-large .toast-message {
+    -fx-font-size: 14px;
+}
+
+/* Toast positioning classes */
+.toast-top-left {
+    -fx-alignment: top-left;
+}
+
+.toast-top-center {
+    -fx-alignment: top-center;
+}
+
+.toast-top-right {
+    -fx-alignment: top-right;
+}
+
+.toast-middle-left {
+    -fx-alignment: center-left;
+}
+
+.toast-middle-center {
+    -fx-alignment: center;
+}
+
+.toast-middle-right {
+    -fx-alignment: center-right;
+}
+
+.toast-bottom-left {
+    -fx-alignment: bottom-left;
+}
+
+.toast-bottom-center {
+    -fx-alignment: bottom-center;
+}
+
+.toast-bottom-right {
+    -fx-alignment: bottom-right;
+}
+
+/* Toast with action button */
+.toast-action-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-primary;
+    -fx-border-color: -fx-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-padding: 4px 12px;
+    -fx-cursor: hand;
+}
+
+.toast-action-button:hover {
+    -fx-background-color: derive(-fx-primary, 90%);
+}
+
+.root.dark-mode .toast-action-button {
+    -fx-text-fill: -fx-primary;
+    -fx-border-color: -fx-primary;
+}
+
+.root.dark-mode .toast-action-button:hover {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+}
+
+/* Toast with countdown timer */
+.toast-timer {
+    -fx-fill: -fx-primary;
+    -fx-stroke: -fx-primary;
+}
+
+.root.dark-mode .toast-timer {
+    -fx-fill: -fx-primary;
+    -fx-stroke: -fx-primary;
+}
+
+/* Accessibility improvements */
+.toast-container:focus-visible {
+    -fx-border-color: -fx-primary;
+    -fx-border-width: 2px;
+}
+
+/* High contrast mode support */
+.high-contrast .toast-container {
+    -fx-border-width: 2px;
+    -fx-border-color: -fx-text-color;
+}
+
+.high-contrast .toast-title {
+    -fx-font-weight: bolder;
+}

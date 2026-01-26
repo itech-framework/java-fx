@@ -21,4 +21,9 @@ public interface Routable {
         preRefresh();
         postRefresh();
     }
+    
+    /**
+     * Controller dispose
+     */
+    default void dispose() {}
 }

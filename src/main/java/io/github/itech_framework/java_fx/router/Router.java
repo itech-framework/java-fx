@@ -112,34 +112,34 @@ public class Router {
 	public void back() {
 		if (navigationStack.size() > 1) {
 			NavigationState currentState = navigationStack.pop();
+
+			// Dispose current controller
+			disposeController(currentState.controller());
+
 			NavigationState previousState = navigationStack.peek();
-
-			// Notify the current controller it's being left
-			if (currentState.controller() instanceof Routable) {
-				((Routable) currentState.controller()).onReturn(previousState.arguments());
-			}
-
-			// Update scene to previous state's root
-			updateSceneRoot(previousState.root());
-			applyTransition(previousState.root(), previousState.route());
-
-			// Update current references
-			currentArguments = previousState.arguments();
-			currentRoot = previousState.root();
-			currentRoute = previousState.route();
 
 			// Notify the previous controller it's being resumed
 			if (previousState.controller() instanceof Routable) {
 				((Routable) previousState.controller()).onResume();
 			}
+
+			updateSceneRoot(previousState.root());
+			applyTransition(previousState.root(), previousState.route());
+
+			currentArguments = previousState.arguments();
+			currentRoot = previousState.root();
+			currentRoute = previousState.route();
 		}
 	}
 
 	public void pop() {
 		if (navigationStack.size() > 1) {
-			navigationStack.pop();
-			NavigationState previousState = navigationStack.peek();
+			NavigationState currentState = navigationStack.pop();
 
+			// Dispose current controller
+			disposeController(currentState.controller());
+
+			NavigationState previousState = navigationStack.peek();
 			navigateTo(previousState.route, previousState.arguments, false);
 		}
 	}
@@ -152,15 +152,15 @@ public class Router {
 			}
 
 			MiddlewareResult result = runRouteMiddlewares(route, arguments);
-
 			if (!result.shouldProceed()) {
 				handleMiddlewareFailure(result);
 				return;
 			}
 
-			logger.debug("Loading page... " + arguments);
+			// DISPOSE CURRENT CONTROLLER BEFORE NAVIGATION
+			disposeCurrentController();
 
-			// Use layout-aware loading
+			logger.debug("Loading page... " + arguments);
 			LoadResult loadedResult = loadWithLayout(route, arguments);
 			Parent root = loadedResult.root();
 			Object controller = loadedResult.controller();
@@ -169,12 +169,13 @@ public class Router {
 
 			updateSceneRoot(root);
 			applyTransition(root, route);
-
 			handleControllerNavigation(route, arguments, controller);
 
 			// Update navigation stack
 			if (replace && !navigationStack.isEmpty()) {
-				navigationStack.pop();
+				NavigationState removedState = navigationStack.pop();
+				// Also dispose controller if it's being replaced
+				disposeController(removedState.controller());
 			}
 
 			navigationStack.push(new NavigationState(route, root, arguments, controller));
@@ -186,6 +187,25 @@ public class Router {
 		} catch (Exception e) {
 			logger.error("Navigation failed: {}", e.getMessage());
 			throw new RuntimeException("Navigation failed: " + e.getMessage(), e);
+		}
+	}
+
+	// Add dispose methods
+	private void disposeCurrentController() {
+		if (!navigationStack.isEmpty()) {
+			NavigationState currentState = navigationStack.peek();
+			disposeController(currentState.controller());
+		}
+	}
+
+	private void disposeController(Object controller) {
+		if (controller instanceof Routable routable) {
+			try {
+				logger.debug("Disposing controller: {}", controller.getClass().getSimpleName());
+				routable.dispose();
+			} catch (Exception e) {
+				logger.error("Error disposing controller", e);
+			}
 		}
 	}
 
@@ -268,6 +288,7 @@ public class Router {
 			Object oldController = ComponentStore.getComponent(currentRoute.controllerClass());
 			if (oldController instanceof Routable) {
 				((Routable) oldController).onReturn(null);
+				((Routable) oldController).dispose();
 			}
 		}
 

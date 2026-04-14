@@ -1,5 +1,14 @@
 package io.github.itech_framework.java_fx.ui.dialog;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import io.github.itech_framework.core.utils.DataStorageUtil;
+import io.github.itech_framework.core.utils.validator.CommonValidator;
+import io.github.itech_framework.java_fx.router.config.RouterConfig;
+import io.github.itech_framework.java_fx.utils.SVGUtil;
+import io.github.itech_framework.java_fx.utils.node.StyleUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
@@ -7,32 +16,19 @@ import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Effect;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import io.github.itech_framework.core.utils.DataStorageUtil;
-import io.github.itech_framework.core.utils.validator.CommonValidator;
-import io.github.itech_framework.java_fx.router.config.RouterConfig;
-import io.github.itech_framework.java_fx.utils.SVGUtil;
-import io.github.itech_framework.java_fx.utils.node.StyleUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class AlertDialog {
 
@@ -40,8 +36,6 @@ public class AlertDialog {
 	private final StackPane rootPane;
 	private final HBox buttonContainer;
 	private Stage ownerStage;
-	private Effect originalOwnerEffect;
-	private Paint originalFill;
 	
 	private Runnable onClose;
 
@@ -143,15 +137,6 @@ public class AlertDialog {
 		if (CommonValidator.validList(stylesheets)) {
 			dialogStage.getScene().getStylesheets().addAll(stylesheets);
 		}
-	}
-
-	private void applyBlurEffect(Node node) {
-		GaussianBlur blur = new GaussianBlur(10);
-		node.setEffect(blur);
-	}
-
-	private void restoreOwnerEffect(Node node) {
-		node.setEffect(originalOwnerEffect);
 	}
 
 	private void playShowAnimation() {

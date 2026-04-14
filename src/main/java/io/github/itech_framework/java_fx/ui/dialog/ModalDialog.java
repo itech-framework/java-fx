@@ -1,10 +1,17 @@
 package io.github.itech_framework.java_fx.ui.dialog;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import io.github.itech_framework.core.utils.DataStorageUtil;
+import io.github.itech_framework.core.utils.validator.CommonValidator;
+import io.github.itech_framework.java_fx.router.config.RouterConfig;
+import io.github.itech_framework.java_fx.utils.node.StyleUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -24,15 +31,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import io.github.itech_framework.core.utils.DataStorageUtil;
-import io.github.itech_framework.core.utils.validator.CommonValidator;
-import io.github.itech_framework.java_fx.router.config.RouterConfig;
-import io.github.itech_framework.java_fx.utils.node.StyleUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 public class ModalDialog {
     private final Stage dialogStage;

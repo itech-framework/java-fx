@@ -40,6 +40,7 @@ public class Router {
 	private Class<?> primaryClass;
 	@Getter
 	private Object currentArguments;
+	@Getter
 	private Route currentRoute;
 	private Parent currentRoot;
 

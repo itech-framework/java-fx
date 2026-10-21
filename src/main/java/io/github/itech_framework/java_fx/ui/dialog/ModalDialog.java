@@ -2,11 +2,11 @@ package io.github.itech_framework.java_fx.ui.dialog;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import io.github.itech_framework.core.utils.DataStorageUtil;
 import io.github.itech_framework.core.utils.validator.CommonValidator;
 import io.github.itech_framework.java_fx.router.config.RouterConfig;
+import io.github.itech_framework.java_fx.utils.FxResources;
 import io.github.itech_framework.java_fx.utils.node.StyleUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -72,9 +72,7 @@ public class ModalDialog {
         // Scene setup
         Scene scene = new Scene(rootPane);
         scene.setFill(Color.TRANSPARENT);
-        scene.getStylesheets().add(Objects.requireNonNull(
-                getClass().getResource("/static/css/style.css")).toExternalForm()
-        );
+        FxResources.applyTheme(scene.getStylesheets());
         dialogStage.setScene(scene);
 
         if (owner != null) {

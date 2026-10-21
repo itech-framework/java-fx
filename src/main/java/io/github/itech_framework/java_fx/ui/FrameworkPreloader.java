@@ -1,13 +1,19 @@
 package io.github.itech_framework.java_fx.ui;
 
-import java.util.prefs.Preferences;
+import java.net.URL;
 
-import io.github.itech_framework.core.utils.PropertiesLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import io.github.itech_framework.core.storage.DefaultDataStorageService;
 import io.github.itech_framework.java_fx.ITechJavaFxApplication;
-import io.github.itech_framework.java_fx.router.config.RouterConfig;
+import io.github.itech_framework.java_fx.config.FxSettings;
+import io.github.itech_framework.java_fx.utils.FxResources;
+import javafx.application.Platform;
 import javafx.application.Preloader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
@@ -15,47 +21,43 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class FrameworkPreloader extends Preloader {
+    private static final Logger logger = LogManager.getLogger(FrameworkPreloader.class);
+
+    private FxSettings.Preloader settings;
     private Stage stage;
+    private VBox root;
     private ProgressBar progressBar;
     private Label messageLabel;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.stage = primaryStage;
-        stage.initStyle(StageStyle.UNDECORATED);
+        FxSettings fx = FxSettings.get();
+        settings = fx.preloader();
+        stage = primaryStage;
+        stage.initStyle(settings.decorated() ? StageStyle.DECORATED : StageStyle.UNDECORATED);
+        stage.setTitle(fx.app().name());
 
-        PropertiesLoader.load(new String[]{"application.properties"}, getClass());
-        String appName = PropertiesLoader.getProperty("app.name", "Application");
+        Label titleLabel = new Label(fx.app().name());
+        titleLabel.setStyle("-fx-font-size: " + settings.titleFontSize() + "px; -fx-font-weight: bold;");
+        messageLabel = new Label(settings.startingMessage());
 
-        boolean darkMode = false;
-        try {
-            Class<?> mainClass = ITechJavaFxApplication.getMainClass();
-            Preferences prefs = Preferences.userNodeForPackage(mainClass);
-            darkMode = prefs.getBoolean(RouterConfig.getDarkModeKey(), false);
-        } catch (Exception e) {
-        }
-
-        Label titleLabel = new Label(appName);
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        messageLabel = new Label("Starting...");
-        
         progressBar = new ProgressBar();
-        progressBar.setPrefWidth(300);
-        progressBar.setPrefHeight(15);
-        progressBar.setMaxHeight(15);
+        progressBar.setPrefWidth(settings.barWidth());
+        progressBar.setPrefHeight(settings.barHeight());
+        progressBar.setMaxHeight(settings.barHeight());
         progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
 
-        VBox root = new VBox(15, titleLabel, messageLabel, progressBar);
+        root = new VBox(15, titleLabel, messageLabel, progressBar);
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 20;-fx-background-color: -fx-background;");
 
-        Scene scene = new Scene(root, 400, 200);
-        String cssUrl = ITechJavaFxApplication.getMainClass().getResource("/static/css/root.css").toExternalForm();
-        if (cssUrl != null) {
-            scene.getStylesheets().add(cssUrl);
-            scene.getRoot().getStyleClass().add("root");
-            if (darkMode) {
-                scene.getRoot().getStyleClass().add("dark-mode");
+        Scene scene = new Scene(root, settings.width(), settings.height());
+        String stylesheet = resolveStylesheet(fx);
+        if (stylesheet != null) {
+            scene.getStylesheets().add(stylesheet);
+            root.getStyleClass().add("root");
+            if (isDarkMode(fx)) {
+                root.getStyleClass().add(fx.theme().darkStyleClass());
             }
         }
 
@@ -65,28 +67,82 @@ public class FrameworkPreloader extends Preloader {
 
     @Override
     public void handleProgressNotification(ProgressNotification pn) {
-        if (messageLabel != null) {
-            double p = pn.getProgress();
-            if (p < 0.3) {
-                messageLabel.setText("Initializing application...");
-            } else if (p < 0.6) {
-                messageLabel.setText("Injecting data...");
-            } else if (p < 0.8) {
-                messageLabel.setText("Preparing components...");
-            } else if (p < 0.95) {
-                messageLabel.setText("Registering services...");
-            } else {
-                messageLabel.setText("Loading...");
-            }
+        if (messageLabel == null) {
+            return;
+        }
+        double progress = pn.getProgress();
+        messageLabel.setText(messageFor(progress));
+        if (progress > 0 && progress <= 1) {
+            progressBar.setProgress(progress);
         }
     }
 
     @Override
+    public boolean handleErrorNotification(ErrorNotification info) {
+        if (messageLabel == null) {
+            return false;
+        }
+        String details = info.getDetails();
+        if ((details == null || details.isBlank()) && info.getCause() != null) {
+            details = info.getCause().getMessage();
+        }
+        messageLabel.setText(settings.failedMessage() + (details == null || details.isBlank() ? "" : ": " + details));
+        messageLabel.setWrapText(true);
+        messageLabel.setStyle("-fx-text-fill: #d32f2f;");
+        progressBar.setProgress(0);
+
+        Button close = new Button("Close");
+        close.setOnAction(e -> Platform.exit());
+        root.getChildren().add(close);
+        return true;
+    }
+
+    @Override
     public void handleStateChangeNotification(StateChangeNotification evt) {
-        if (evt.getType() == StateChangeNotification.Type.BEFORE_START) {
-            if (stage != null) {
-                stage.hide();
-            }
+        if (evt.getType() == StateChangeNotification.Type.BEFORE_START && stage != null) {
+            stage.hide();
+        }
+    }
+
+    private String messageFor(double progress) {
+        if (progress < 0.3) return settings.initializingMessage();
+        if (progress < 0.6) return settings.injectingMessage();
+        if (progress < 0.8) return settings.preparingMessage();
+        if (progress < 0.95) return settings.registeringMessage();
+        return settings.finalizingMessage();
+    }
+
+    private String resolveStylesheet(FxSettings fx) {
+        String path = settings.stylesheet();
+        if (path.isBlank() && fx.theme().enabled()) {
+            path = fx.theme().stylesheet();
+        }
+        if (path.isBlank()) {
+            return null;
+        }
+        URL url = FxResources.find(ITechJavaFxApplication.getMainClass(), path);
+        if (url == null) {
+            logger.warn("Preloader stylesheet not found: {} (continuing without it)", path);
+            return null;
+        }
+        return url.toExternalForm();
+    }
+
+    private boolean isDarkMode(FxSettings fx) {
+        return switch (settings.theme()) {
+            case DARK -> true;
+            case LIGHT -> false;
+            case AUTO -> storedDarkMode(fx.theme().darkModeKey());
+        };
+    }
+
+    private boolean storedDarkMode(String key) {
+        try {
+            String stored = new DefaultDataStorageService().load(key);
+            return stored != null && Boolean.parseBoolean(stored.replace("\"", ""));
+        } catch (RuntimeException e) {
+            logger.debug("Could not read the stored dark mode value", e);
+            return false;
         }
     }
 }

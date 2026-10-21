@@ -1,5 +1,6 @@
 package io.github.itech_framework.java_fx.ui.toast;
 
+import io.github.itech_framework.java_fx.config.FxSettings;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -9,16 +10,16 @@ import javafx.util.Duration;
 public class ToastConfig {
     private String title;
     private String message;
-    private ToastPosition position = ToastPosition.BOTTOM_RIGHT;
-    private Duration duration = Duration.seconds(3);
-    private double offsetX = 20;
-    private double offsetY = 20;
+    private ToastPosition position = FxSettings.get().toast().position();
+    private Duration duration = Duration.millis(FxSettings.get().toast().durationMillis());
+    private double offsetX = FxSettings.get().toast().offsetX();
+    private double offsetY = FxSettings.get().toast().offsetY();
+    private double maxWidth = FxSettings.get().toast().maxWidth();
+    private double maxHeight = FxSettings.get().toast().maxHeight();
     private ToastType type = ToastType.INFO;
     private boolean showIcon = true;
     private boolean showCloseButton = true;
     private boolean autoHide = true;
-    private double maxWidth = 350;
-    private double maxHeight = 200;
     private String customStyleClass;
     private Color backgroundColor;
     private Color textColor;

@@ -8,9 +8,15 @@ public class Route {
 	private String layout;
 
 	public Route(String name, String fxmlPath, Class<?> controllerClass) {
-		this.name = name;
-		this.fxmlPath = fxmlPath;
-		this.controllerClass = controllerClass;
+	    if (name == null || name.isBlank()) {
+	        throw new IllegalArgumentException("Route name must not be blank");
+	    }
+	    if (fxmlPath == null || fxmlPath.isBlank()) {
+	        throw new IllegalArgumentException("Route '" + name + "' needs an FXML path, for example /views/home.fxml");
+	    }
+	    this.name = name;
+	    this.fxmlPath = fxmlPath;
+	    this.controllerClass = controllerClass;
 	}
 
 	public Route withTransition(String transitionName) {

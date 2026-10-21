@@ -1,8 +1,10 @@
 package io.github.itech_framework.java_fx.ui.layout;
 
+import io.github.itech_framework.java_fx.config.FxSettings;
+
 public class LayoutConfig {
 	private String layoutFxml;
-    private String contentContainerId = "contentContainer";
+	private String contentContainerId = FxSettings.get().router().contentContainerId();
     private boolean enabled = true;
     
     public LayoutConfig(String layoutFxml) {

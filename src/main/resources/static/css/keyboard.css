@@ -1,0 +1,82 @@
+/* Main keyboard container - clean white surface */
+.fxvk {
+    -fx-background-color: #f8f9fc;
+    -fx-background-radius: 24px;
+    -fx-padding: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 15, 0, 0, 4);
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 24px;
+}
+
+/* All keys base style - flat & clean */
+.key {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.02), 2, 0, 0, 1);
+    -fx-cursor: hand;
+}
+
+.key:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 4, 0, 0, 2);
+}
+
+.key:pressed {
+    -fx-background-color: #e2e8f0;
+    -fx-translate-y: 1px;
+}
+
+/* Text labels on keys */
+.key-text {
+    -fx-font-family: "Segoe UI", "Inter", "Roboto", sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+    -fx-fill: #1e293b;
+}
+
+/* Special keys (Shift, Enter, Backspace, etc.) - subtle accent */
+.special-key {
+    -fx-background-color: #eef2ff;
+    -fx-border-color: #cbd5e1;
+}
+
+.special-key .key-text {
+    -fx-fill: #1e40af;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+}
+
+.special-key:hover {
+    -fx-background-color: #e0e7ff;
+}
+
+/* Secondary popup panel (for extra symbols) */
+.fxvk-secondary {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 20, 0, 0, 8);
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 20px;
+}
+
+/* Space key - slightly wider, clean */
+.key[text=" "] {
+    -fx-min-width: 260px;
+    -fx-background-color: #ffffff;
+}
+
+/* Numeric keypad keys (if visible) */
+.number-key {
+    -fx-background-color: #fafcff;
+}
+
+/* Active / pressed feedback for text color */
+.key:pressed .key-text,
+.special-key:pressed .key-text {
+    -fx-fill: #3b82f6;
+}

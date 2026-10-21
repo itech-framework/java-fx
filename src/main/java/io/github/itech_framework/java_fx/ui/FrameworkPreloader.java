@@ -76,7 +76,7 @@ public class FrameworkPreloader extends Preloader {
             } else if (p < 0.95) {
                 messageLabel.setText("Registering services...");
             } else {
-                messageLabel.setText("Finalizing...");
+                messageLabel.setText("Loading...");
             }
         }
     }

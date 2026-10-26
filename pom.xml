@@ -6,7 +6,7 @@
 
     <groupId>io.github.itech-framework</groupId>
     <artifactId>java-fx</artifactId>
-    <version>1.0.12-SNAPSHOT</version>
+    <version>1.0.12-RC1</version>
 
     <name>iTech Framework - JavaFX Module</name>
     <description>
@@ -28,7 +28,6 @@
     </description>
     <url>https://github.com/itech-framework/java-fx</url>
 
-    <!-- Licensing Information -->
     <licenses>
         <license>
             <name>MIT License</name>
@@ -43,29 +42,27 @@
         </developer>
     </developers>
 
-    <!-- SCM Configuration -->
     <scm>
         <connection>scm:git:https://github.com/itech-framework/java-fx.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/itech-framework/java-fx.git</developerConnection>
         <url>https://github.com/itech-framework/java-fx/tree/main</url>
     </scm>
 
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>17.0.1</javafx.version>
+        <itech.version>1.0.12-RC1</itech.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.github.itech-framework</groupId>
             <artifactId>core</artifactId>
-            <version>1.0.12-SNAPSHOT</version>
+            <version>${itech.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api -->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
@@ -101,7 +98,6 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
@@ -137,9 +133,9 @@
                         <link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
                     </links>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-					<additionalOptions>
-						<additionalOption>-Xdoclint:none</additionalOption>
-					</additionalOptions>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                    </additionalOptions>
                 </configuration>
                 <executions>
                     <execution>
@@ -163,7 +159,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
@@ -176,7 +172,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 

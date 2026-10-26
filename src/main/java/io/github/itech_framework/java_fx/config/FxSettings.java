@@ -16,7 +16,7 @@ public final class FxSettings {
 
     public enum PreloaderTheme { AUTO, LIGHT, DARK }
 
-    public record App(String name, boolean exitOnStop, boolean controllersRequired) {}
+    public record App(String name, boolean exitOnStop, boolean controllersRequired, boolean smoothFont) {}
 
     public record Theme(boolean enabled, String stylesheet, String darkModeKey, String darkStyleClass,
                         Color lightFill, Color darkFill) {}
@@ -25,7 +25,7 @@ public final class FxSettings {
                             double width, double height, double barWidth, double barHeight, double titleFontSize,
                             String startingMessage, String initializingMessage, String injectingMessage,
                             String preparingMessage, String registeringMessage, String finalizingMessage,
-                            String failedMessage) {}
+                            String failedMessage, long delay) {}
 
     public record Router(boolean validateOnInit, boolean runOnFxThread, DisposePolicy disposePolicy,
                          String contentContainerId, int maxRedirects) {}
@@ -36,7 +36,12 @@ public final class FxSettings {
 
     public record Toast(ToastPosition position, long durationMillis, double offsetX, double offsetY,
                         double maxWidth, double maxHeight) {}
+    
+    public record Scroll(boolean smooth, double speed, double responseMillis, boolean contentCaching) {}
 
+    public record Notification(boolean enabled, boolean tray, String trayIcon, String trayTooltip,
+            long pollSeconds, int maxPerCycle, long keepHours) {}
+    
     private static final Map<String, String> OVERRIDES = new ConcurrentHashMap<>();
     private static volatile FxSettings current;
 
@@ -47,9 +52,13 @@ public final class FxSettings {
     private final Components components;
     private final Background background;
     private final Toast toast;
+    
+    private final Scroll scroll;
+
+    private final Notification notification;
 
     private FxSettings(App app, Theme theme, Preloader preloader, Router router, Components components,
-                       Background background, Toast toast) {
+                       Background background, Toast toast, Scroll scroll, Notification notification) {
         this.app = app;
         this.theme = theme;
         this.preloader = preloader;
@@ -57,7 +66,13 @@ public final class FxSettings {
         this.components = components;
         this.background = background;
         this.toast = toast;
+        this.scroll = scroll;
+        this.notification = notification;
     }
+
+    public Notification notification() { return notification; }
+
+    public Scroll scroll() { return scroll; }
 
     public App app() { return app; }
     public Theme theme() { return theme; }
@@ -105,7 +120,8 @@ public final class FxSettings {
         App app = new App(
                 in.string("app.name", "Application"),
                 in.bool("fx.app.exit-on-stop", true),
-                in.bool("fx.controllers.required", true));
+                in.bool("fx.controllers.required", true),
+                in.bool("fx.app.font.smooth", true));
 
         Theme theme = new Theme(
                 in.bool("fx.theme.enabled", true),
@@ -131,7 +147,8 @@ public final class FxSettings {
                 in.string("fx.preloader.message.preparing", "Preparing components..."),
                 in.string("fx.preloader.message.registering", "Registering services..."),
                 in.string("fx.preloader.message.finalizing", "Finalizing..."),
-                in.string("fx.preloader.message.failed", "Startup failed"));
+                in.string("fx.preloader.message.failed", "Startup failed"),
+                in.number("fx.preloader.delay", 0, 0, 100000));
 
         Router router = new Router(
                 in.bool("fx.router.validate-on-init", true),
@@ -156,8 +173,23 @@ public final class FxSettings {
                 in.number("fx.toast.max-width", 350, 50, 4000),
                 in.number("fx.toast.max-height", 200, 30, 4000));
 
+        Scroll scroll = new Scroll(
+                in.bool("fx.scroll.smooth", true),
+                in.number("fx.scroll.speed", 2.0, 0.1, 20),
+                in.number("fx.scroll.response-ms", 80, 10, 1000),
+                in.bool("fx.scroll.content-caching", true));
+
+        Notification notification = new Notification(
+                in.bool("fx.notification.enabled", true),
+                in.bool("fx.notification.tray", true),
+                in.string("fx.notification.tray-icon", ""),
+                in.string("fx.notification.tray-tooltip", app.name()),
+                (long) in.number("fx.notification.poll-seconds", 60, 5, 3600),
+                (int) in.number("fx.notification.max-per-cycle", 3, 1, 20),
+                (long) in.number("fx.notification.keep-hours", 48, 1, 720));
+
         in.failOnErrors();
-        return new FxSettings(app, theme, preloader, router, components, background, toast);
+        return new FxSettings(app, theme, preloader, router, components, background, toast, scroll, notification);
     }
 
     private static final class Reader {
@@ -188,6 +220,21 @@ public final class FxSettings {
             String value = raw(key, String.valueOf(fallback));
             try {
                 double parsed = Double.parseDouble(value);
+                if (parsed < min || parsed > max) {
+                    errors.add(key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
+                    return fallback;
+                }
+                return parsed;
+            } catch (NumberFormatException e) {
+                errors.add(key + "=" + value + " (expected a number)");
+                return fallback;
+            }
+        }
+        
+        long number(String key, long fallback, long min, long max) {
+            String value = raw(key, String.valueOf(fallback));
+            try {
+                long parsed = Long.parseLong(value);
                 if (parsed < min || parsed > max) {
                     errors.add(key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
                     return fallback;

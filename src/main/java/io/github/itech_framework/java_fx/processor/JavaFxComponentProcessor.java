@@ -5,6 +5,8 @@ import io.github.itech_framework.core.processor.components_processor.ComponentPr
 import io.github.itech_framework.core.store.ComponentStore;
 import io.github.itech_framework.java_fx.annotations.FxController;
 import io.github.itech_framework.java_fx.config.FxSettings;
+import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
+import io.github.itech_framework.java_fx.utils.notification.NotificationSource;
 
 public class JavaFxComponentProcessor {
 
@@ -12,6 +14,16 @@ public class JavaFxComponentProcessor {
         ComponentProcessor.initialize(mainClass);
         if (FxSettings.get().app().controllersRequired()) {
             validateFxControllers();
+        }
+        registerNotificationSources();
+    }
+
+    private static void registerNotificationSources() {
+        NotificationCenter center = NotificationCenter.getInstance();
+        for (Object instance : ComponentStore.getAllComponents()) {
+            if (instance instanceof NotificationSource source) {
+                center.register(source);
+            }
         }
     }
 

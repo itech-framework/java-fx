@@ -34,7 +34,10 @@ import io.github.itech_framework.java_fx.router.core.Route;
 import io.github.itech_framework.java_fx.ui.layout.LayoutConfig;
 import io.github.itech_framework.java_fx.ui.layout.LayoutController;
 import io.github.itech_framework.java_fx.utils.FxResources;
+import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -71,7 +74,8 @@ public class Router {
     public void initialize(Class<?> clazz, Stage stage) {
         this.primaryClass = Objects.requireNonNull(clazz, "primary class must not be null");
         this.primaryStage = Objects.requireNonNull(stage, "primary stage must not be null");
-
+        NotificationCenter.getInstance().attach(clazz, stage);
+        
         FxSettings settings = FxSettings.get();
         if (settings.theme().enabled()) {
             String themeCss = FxResources.themeStylesheet();
@@ -256,8 +260,8 @@ public class Router {
                 navigationStack.pop().remove();
             }
 
-            NavigationState state = new NavigationState(route, loaded.root(), arguments, loaded.controller(),
-                    loaded.layoutController());
+            NavigationState state = new NavigationState(route, loaded.root(), loaded.contentRoot(), arguments,
+                    loaded.controller(), loaded.layoutController());
             navigationStack.push(state);
             show(state);
             if (state.controller() instanceof Routable routable) {
@@ -301,8 +305,8 @@ public class Router {
             }
             navigationStack.pop().remove();
 
-            NavigationState fresh = new NavigationState(current.route(), loaded.root(), newArguments, controller,
-                    loaded.layoutController());
+            NavigationState fresh = new NavigationState(current.route(), loaded.root(), loaded.contentRoot(), newArguments,
+                    controller, loaded.layoutController());
             navigationStack.push(fresh);
             show(fresh);
             if (controller instanceof Routable routable) {
@@ -326,7 +330,7 @@ public class Router {
 
         if (layout == null || !layout.isEnabled()) {
             Result<Parent, Object> result = FxControllerLoader.loadWithResult(primaryClass, route.fxmlPath());
-            return new LoadResult(result.getRoot(), result.getController(), null);
+            return new LoadResult(result.getRoot(), result.getRoot(), result.getController(), null);
         }
 
         Result<Parent, Object> layoutResult = FxControllerLoader.loadWithResult(primaryClass, layout.getLayoutFxml());
@@ -358,12 +362,12 @@ public class Router {
             destroyQuietly(layoutController);
             throw e;
         }
-        return new LoadResult(layoutRoot, contentResult.getController(), layoutController);
+        return new LoadResult(layoutRoot, contentResult.getRoot(), contentResult.getController(), layoutController);
     }
 
     private void show(NavigationState state) {
         updateSceneRoot(state.root());
-        applyTransition(state.root(), state.route());
+        applyTransition(state.contentRoot(), state.route());
         currentArguments = state.arguments();
         currentRoot = state.root();
         currentRoute = state.route();
@@ -371,9 +375,31 @@ public class Router {
 
     private void applyTransition(Parent root, Route route) {
         TransitionEffect effect = config.getTransition(route.transitionName());
-        if (effect != null) {
-            effect.apply(root);
+        if (effect == null) {
+            return;
         }
+        if (primaryStage.isShowing()) {
+            Platform.runLater(() -> playTransition(root, effect));
+            return;
+        }
+        primaryStage.showingProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean showing) {
+                if (showing) {
+                    primaryStage.showingProperty().removeListener(this);
+                    Platform.runLater(() -> playTransition(root, effect));
+                }
+            }
+        });
+    }
+
+    private void playTransition(Parent root, TransitionEffect effect) {
+        if (root.getScene() == null) {
+            return;
+        }
+        root.applyCss();
+        root.layout();
+        effect.apply(root);
     }
 
     private void updateSceneRoot(Parent root) {
@@ -517,26 +543,34 @@ public class Router {
         PUSH, REPLACE, RESET
     }
 
-    private record LoadResult(Parent root, Object controller, Object layoutController) {
+    private record LoadResult(Parent root, Parent contentRoot, Object controller, Object layoutController) {
     }
 
     private static final class NavigationState {
-        private final Route route;
+    	private final Route route;
         private final Parent root;
+        @SuppressWarnings("unused")
+		private final Parent contentRoot;
         private final Object arguments;
         private final Object controller;
         private final Object layoutController;
         private boolean disposed;
         private boolean destroyed;
 
-        NavigationState(Route route, Parent root, Object arguments, Object controller, Object layoutController) {
+        NavigationState(Route route, Parent root, Parent contentRoot, Object arguments, Object controller,
+                Object layoutController) {
             this.route = route;
             this.root = root;
+            this.contentRoot = contentRoot;
             this.arguments = arguments;
             this.controller = controller;
             this.layoutController = layoutController;
         }
 
+        Parent contentRoot() {
+            return contentRoot;
+        }
+        
         Route route() {
             return route;
         }

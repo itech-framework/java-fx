@@ -3,6 +3,7 @@ package io.github.itech_framework.java_fx.utils.concurrent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
@@ -23,6 +24,7 @@ public class BackgroundTaskService {
     private final ExecutorService executor;
     private final ScheduledExecutorService scheduledExecutor;
     private final long shutdownWaitMillis;
+    private final Thread shutdownHook;
 
     public static BackgroundTaskService getInstance() {
         BackgroundTaskService local = instance;
@@ -45,15 +47,16 @@ public class BackgroundTaskService {
         this.scheduledExecutor = Executors.newScheduledThreadPool(settings.scheduledThreads(),
                 threadFactory("fx-scheduled", settings.daemon()));
         this.shutdownWaitMillis = settings.shutdownWaitMillis();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown, "fx-background-shutdown"));
+        this.shutdownHook = new Thread(this::shutdown, "fx-background-shutdown");
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
-    public <T> void executeTask(Callable<T> task, Consumer<T> onSuccess, Consumer<Exception> onError) {
-        executeTask(task, onSuccess, onError, null);
+    public <T> Task<T> executeTask(Callable<T> task, Consumer<T> onSuccess, Consumer<Exception> onError) {
+        return executeTask(task, onSuccess, onError, null);
     }
 
-    public <T> void executeTask(Callable<T> task, Consumer<T> onSuccess, Consumer<Exception> onError,
-                                Consumer<Double> onProgress) {
+    public <T> Task<T> executeTask(Callable<T> task, Consumer<T> onSuccess, Consumer<Exception> onError,
+                                   Consumer<Double> onProgress) {
         Task<T> fxTask = new Task<>() {
             @Override
             protected T call() throws Exception {
@@ -83,10 +86,11 @@ public class BackgroundTaskService {
             });
         }
         executor.execute(fxTask);
+        return fxTask;
     }
 
-    public void executeRunnable(Runnable task) {
-        executor.execute(() -> {
+    public Future<?> executeRunnable(Runnable task) {
+        return executor.submit(() -> {
             try {
                 task.run();
             } catch (Exception e) {
@@ -106,8 +110,8 @@ public class BackgroundTaskService {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void executeProgressTask(ProgressTask task) {
-        executeTask(task, task::onSuccess, task::onError, task::onProgress);
+    public Task<?> executeProgressTask(ProgressTask task) {
+        return executeTask(task, task::onSuccess, task::onError, task::onProgress);
     }
 
     public ExecutorService getExecutor() {
@@ -115,6 +119,15 @@ public class BackgroundTaskService {
     }
 
     public void shutdown() {
+        synchronized (BackgroundTaskService.class) {
+            if (instance == this) {
+                instance = null;
+            }
+        }
+        try {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        } catch (IllegalStateException ignored) {
+        }
         executor.shutdownNow();
         scheduledExecutor.shutdownNow();
         try {

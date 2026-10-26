@@ -9,6 +9,11 @@ import io.github.itech_framework.core.storage.DefaultDataStorageService;
 import io.github.itech_framework.java_fx.ITechJavaFxApplication;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.utils.FxResources;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.application.Preloader;
 import javafx.geometry.Pos;
@@ -19,15 +24,18 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class FrameworkPreloader extends Preloader {
     private static final Logger logger = LogManager.getLogger(FrameworkPreloader.class);
+    private static final Duration ANIMATION_DURATION = Duration.millis(500);
 
     private FxSettings.Preloader settings;
     private Stage stage;
     private VBox root;
     private ProgressBar progressBar;
     private Label messageLabel;
+    private Timeline animation;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -66,15 +74,21 @@ public class FrameworkPreloader extends Preloader {
     }
 
     @Override
-    public void handleProgressNotification(ProgressNotification pn) {
+    public void handleApplicationNotification(PreloaderNotification info) {
         if (messageLabel == null) {
             return;
         }
-        double progress = pn.getProgress();
-        messageLabel.setText(messageFor(progress));
-        if (progress > 0 && progress <= 1) {
-            progressBar.setProgress(progress);
+        if (info instanceof ProgressNotification pn) {
+            double progress = pn.getProgress();
+            messageLabel.setText(messageFor(progress));
+            if (progress > 0 && progress <= 1) {
+                animateTo(progress);
+            }
         }
+    }
+
+    @Override
+    public void handleProgressNotification(ProgressNotification pn) {
     }
 
     @Override
@@ -89,6 +103,9 @@ public class FrameworkPreloader extends Preloader {
         messageLabel.setText(settings.failedMessage() + (details == null || details.isBlank() ? "" : ": " + details));
         messageLabel.setWrapText(true);
         messageLabel.setStyle("-fx-text-fill: #d32f2f;");
+        if (animation != null) {
+            animation.stop();
+        }
         progressBar.setProgress(0);
 
         Button close = new Button("Close");
@@ -100,8 +117,25 @@ public class FrameworkPreloader extends Preloader {
     @Override
     public void handleStateChangeNotification(StateChangeNotification evt) {
         if (evt.getType() == StateChangeNotification.Type.BEFORE_START && stage != null) {
-            stage.hide();
+            if (animation != null && animation.getStatus() == Animation.Status.RUNNING) {
+                animation.setOnFinished(e -> stage.hide());
+            } else {
+                stage.hide();
+            }
         }
+    }
+
+    private void animateTo(double target) {
+        if (animation != null) {
+            animation.stop();
+        }
+        if (progressBar.getProgress() < 0) {
+            progressBar.setProgress(0);
+        }
+        animation = new Timeline(new KeyFrame(
+                ANIMATION_DURATION,
+                new KeyValue(progressBar.progressProperty(), target, Interpolator.EASE_BOTH)));
+        animation.play();
     }
 
     private String messageFor(double progress) {

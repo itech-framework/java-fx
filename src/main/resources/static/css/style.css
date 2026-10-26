@@ -344,9 +344,8 @@
     -fx-background-color: -fx-base;
     -fx-border-color: -fx-border-base;
     -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    /*-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);*/
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
     -fx-background-insets: 0;
     -fx-border-insets: 0;
 }
@@ -384,6 +383,47 @@
 .alert-info .alert-icon { -fx-fill: -fx-info; }
 .alert-success .alert-icon { -fx-fill: -fx-success; }
 
+.dialog-close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-text-color;
+    -fx-border-color: -fx-border-base;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px 12px;
+    -fx-font-size: 12px;
+}
+
+.dialog-close-button:hover {
+    -fx-background-color: derive(-fx-border-base, 80%);
+}
+
+.root.dark-mode .dialog-close-button:hover {
+    -fx-background-color: derive(-fx-border-base, -20%);
+}
+
+.loading-container {
+    -fx-background-color: -fx-base;
+    -fx-background-radius: 12px;
+    -fx-border-color: -fx-border-base;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+}
+
+.loading-message {
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-text-color;
+    -fx-wrap-text: true;
+}
+
+.loading-progress {
+    -fx-progress-color: -fx-primary;
+}
+
+.loading-progress-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: derive(-fx-text-color, 30%);
+}
+
 /* Dark mode specific adjustments */
 .root.dark-mode .alert-container {
     -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.05), 10, 0, 0, 0);
@@ -399,14 +439,26 @@
 
 
 /* Toast Styles - Using Root Color Variables */
+.toast-root {
+    -fx-background-color: transparent;
+    -fx-padding: 8px;
+}
+
 .toast-container {
     -fx-background-color: -fx-base;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
     -fx-border-color: -fx-border-base;
     -fx-border-width: 1px;
+}
+
+.toast-body {
     -fx-padding: 15px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 3);
+    -fx-spacing: 8px;
+}
+
+.toast-header {
+    -fx-spacing: 10px;
 }
 
 .toast-title {
@@ -427,67 +479,63 @@
 
 .toast-close-button {
     -fx-background-color: transparent;
-    -fx-text-fill: -fx-disabled;
-    -fx-font-size: 12px;
-    -fx-padding: 0;
+    -fx-background-radius: 10px;
     -fx-min-width: 20px;
     -fx-min-height: 20px;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 20px;
     -fx-max-width: 20px;
     -fx-max-height: 20px;
     -fx-cursor: hand;
 }
 
 .toast-close-button:hover {
-    -fx-text-fill: -fx-text-color;
     -fx-background-color: derive(-fx-border-base, 80%);
-    -fx-background-radius: 10px;
 }
 
 .toast-close-button:pressed {
     -fx-background-color: derive(-fx-border-base, 70%);
 }
 
+.toast-close-icon {
+    -fx-fill: transparent;
+    -fx-stroke: -fx-disabled;
+    -fx-stroke-width: 1.5px;
+    -fx-stroke-line-cap: round;
+}
+
+.toast-close-button:hover .toast-close-icon {
+    -fx-stroke: -fx-text-color;
+}
+
 /* Toast type backgrounds using root color palette */
 .toast-info {
     -fx-background-color: linear-gradient(to bottom, derive(-fx-info, 90%), derive(-fx-info, 85%));
     -fx-border-color: derive(-fx-info, 30%);
-    -fx-text-fill: derive(-fx-dark, -30%);
 }
 
 .toast-success {
     -fx-background-color: linear-gradient(to bottom, derive(-fx-success, 90%), derive(-fx-success, 85%));
     -fx-border-color: derive(-fx-success, 30%);
-    -fx-text-fill: derive(-fx-dark, -30%);
 }
 
 .toast-warning {
     -fx-background-color: linear-gradient(to bottom, derive(-fx-warning, 90%), derive(-fx-warning, 85%));
     -fx-border-color: derive(-fx-warning, 30%);
-    -fx-text-fill: derive(-fx-dark, -30%);
 }
 
 .toast-error {
     -fx-background-color: linear-gradient(to bottom, derive(-fx-danger, 90%), derive(-fx-danger, 85%));
     -fx-border-color: derive(-fx-danger, 30%);
-    -fx-text-fill: derive(-fx-dark, -30%);
 }
 
 /* Toast type specific text colors */
 .toast-info .toast-title,
-.toast-info .toast-message {
-    -fx-text-fill: derive(-fx-dark, -40%);
-}
-
+.toast-info .toast-message,
 .toast-success .toast-title,
-.toast-success .toast-message {
-    -fx-text-fill: derive(-fx-dark, -40%);
-}
-
+.toast-success .toast-message,
 .toast-warning .toast-title,
-.toast-warning .toast-message {
-    -fx-text-fill: derive(-fx-dark, -40%);
-}
-
+.toast-warning .toast-message,
 .toast-error .toast-title,
 .toast-error .toast-message {
     -fx-text-fill: derive(-fx-dark, -40%);
@@ -505,10 +553,10 @@
 }
 
 /* Dark mode adjustments */
+
 .root.dark-mode .toast-container {
     -fx-background-color: -fx-base;
     -fx-border-color: -fx-border-base;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
 }
 
 .root.dark-mode .toast-title {
@@ -524,7 +572,6 @@
 }
 
 .root.dark-mode .toast-close-button:hover {
-    -fx-text-fill: -fx-text-color;
     -fx-background-color: derive(-fx-border-base, -20%);
 }
 
@@ -602,6 +649,56 @@
     -fx-text-fill: -fx-secondary;
 }
 
+/* Outline variant: use customStyleClass("toast-outline") */
+.toast-container.toast-outline.toast-info {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-info;
+    -fx-border-width: 1.5px;
+}
+
+.toast-container.toast-outline.toast-success {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-success;
+    -fx-border-width: 1.5px;
+}
+
+.toast-container.toast-outline.toast-warning {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-warning;
+    -fx-border-width: 1.5px;
+}
+
+.toast-container.toast-outline.toast-error {
+    -fx-background-color: -fx-base;
+    -fx-border-color: -fx-danger;
+    -fx-border-width: 1.5px;
+}
+
+/* Accent bar variant: use customStyleClass("toast-accent") */
+.toast-container.toast-accent.toast-info {
+    -fx-background-color: -fx-base;
+    -fx-border-color: transparent transparent transparent -fx-info;
+    -fx-border-width: 0 0 0 5px;
+}
+
+.toast-container.toast-accent.toast-success {
+    -fx-background-color: -fx-base;
+    -fx-border-color: transparent transparent transparent -fx-success;
+    -fx-border-width: 0 0 0 5px;
+}
+
+.toast-container.toast-accent.toast-warning {
+    -fx-background-color: -fx-base;
+    -fx-border-color: transparent transparent transparent -fx-warning;
+    -fx-border-width: 0 0 0 5px;
+}
+
+.toast-container.toast-accent.toast-error {
+    -fx-background-color: -fx-base;
+    -fx-border-color: transparent transparent transparent -fx-danger;
+    -fx-border-width: 0 0 0 5px;
+}
+
 /* Animation effects for toast */
 @keyframes toastFadeIn {
     from {
@@ -638,20 +735,40 @@
     -fx-margin-bottom: 10px;
 }
 
-/* Toast with progress bar */
 .toast-progress-bar {
     -fx-accent: -fx-primary;
-    -fx-background-color: derive(-fx-border-base, 90%);
+    -fx-pref-height: 8px;
+    -fx-min-height: 8px;
+    -fx-padding: 6px 0 0 0;
 }
 
-.root.dark-mode .toast-progress-bar {
+.toast-progress-bar > .track {
+    -fx-background-color: derive(-fx-border-base, 30%);
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+}
+
+
+.toast-progress-bar > .bar {
+    -fx-background-color: -fx-accent;
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+    -fx-padding: 4px;
+}
+
+.root.dark-mode .toast-progress-bar > .track {
     -fx-background-color: derive(-fx-border-base, -20%);
 }
 
-/* Compact toast variant */
+/* Compact toast variant: use customStyleClass("toast-compact") */
 .toast-compact {
-    -fx-padding: 10px;
+    -fx-min-width: 250px;
+    -fx-pref-width: 250px;
     -fx-max-width: 250px;
+}
+
+.toast-compact .toast-body {
+    -fx-padding: 10px;
 }
 
 .toast-compact .toast-title {
@@ -662,10 +779,15 @@
     -fx-font-size: 12px;
 }
 
-/* Large toast variant */
+/* Large toast variant: use customStyleClass("toast-large") */
 .toast-large {
-    -fx-padding: 20px;
+    -fx-min-width: 450px;
+    -fx-pref-width: 450px;
     -fx-max-width: 450px;
+}
+
+.toast-large .toast-body {
+    -fx-padding: 20px;
 }
 
 .toast-large .toast-title {
@@ -746,6 +868,10 @@
 .root.dark-mode .toast-timer {
     -fx-fill: -fx-primary;
     -fx-stroke: -fx-primary;
+}
+
+.root.dialog-root {
+    -fx-background-color: transparent;
 }
 
 /* Accessibility improvements */

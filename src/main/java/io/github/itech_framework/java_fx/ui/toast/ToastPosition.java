@@ -1,64 +1,93 @@
 package io.github.itech_framework.java_fx.ui.toast;
 
 /**
- * Enum representing different positions for the toast notification
+ * Screen positions where a toast can be displayed.
+ * <p>
+ * Positions are relative to the visual bounds of the screen that contains the
+ * owner window. Toasts that share a position are stacked on top of each other.
+ * The vertical and horizontal helper methods ({@code isTop()}, {@code isLeft()}, ...)
+ * all return {@code false} for {@link #CUSTOM}.
  */
 public enum ToastPosition {
-    // Top positions
+    /** Top edge, left corner. */
     TOP_LEFT,
+
+    /** Top edge, horizontally centered. */
     TOP_CENTER,
+
+    /** Top edge, right corner. */
     TOP_RIGHT,
-    
-    // Middle positions
+
+    /** Vertically centered, left edge. */
     MIDDLE_LEFT,
+
+    /** Centered both vertically and horizontally. */
     MIDDLE_CENTER,
+
+    /** Vertically centered, right edge. */
     MIDDLE_RIGHT,
-    
-    // Bottom positions
+
+    /** Bottom edge, left corner. */
     BOTTOM_LEFT,
+
+    /** Bottom edge, horizontally centered. */
     BOTTOM_CENTER,
+
+    /** Bottom edge, right corner. */
     BOTTOM_RIGHT,
-    
-    // Custom position (set by user)
+
+    /** Placed using only the configured offsets from the top-left of the screen. */
     CUSTOM;
-    
+
     /**
-     * Check if position is at the top
+     * Checks whether this position is on the top row.
+     *
+     * @return {@code true} for {@link #TOP_LEFT}, {@link #TOP_CENTER} and {@link #TOP_RIGHT}
      */
     public boolean isTop() {
         return this == TOP_LEFT || this == TOP_CENTER || this == TOP_RIGHT;
     }
-    
+
     /**
-     * Check if position is in the middle
+     * Checks whether this position is on the middle row.
+     *
+     * @return {@code true} for {@link #MIDDLE_LEFT}, {@link #MIDDLE_CENTER} and {@link #MIDDLE_RIGHT}
      */
     public boolean isMiddle() {
         return this == MIDDLE_LEFT || this == MIDDLE_CENTER || this == MIDDLE_RIGHT;
     }
-    
+
     /**
-     * Check if position is at the bottom
+     * Checks whether this position is on the bottom row.
+     *
+     * @return {@code true} for {@link #BOTTOM_LEFT}, {@link #BOTTOM_CENTER} and {@link #BOTTOM_RIGHT}
      */
     public boolean isBottom() {
         return this == BOTTOM_LEFT || this == BOTTOM_CENTER || this == BOTTOM_RIGHT;
     }
-    
+
     /**
-     * Check if position is on the left
+     * Checks whether this position is aligned to the left edge.
+     *
+     * @return {@code true} for {@link #TOP_LEFT}, {@link #MIDDLE_LEFT} and {@link #BOTTOM_LEFT}
      */
     public boolean isLeft() {
         return this == TOP_LEFT || this == MIDDLE_LEFT || this == BOTTOM_LEFT;
     }
-    
+
     /**
-     * Check if position is centered horizontally
+     * Checks whether this position is horizontally centered.
+     *
+     * @return {@code true} for {@link #TOP_CENTER}, {@link #MIDDLE_CENTER} and {@link #BOTTOM_CENTER}
      */
     public boolean isCenter() {
         return this == TOP_CENTER || this == MIDDLE_CENTER || this == BOTTOM_CENTER;
     }
-    
+
     /**
-     * Check if position is on the right
+     * Checks whether this position is aligned to the right edge.
+     *
+     * @return {@code true} for {@link #TOP_RIGHT}, {@link #MIDDLE_RIGHT} and {@link #BOTTOM_RIGHT}
      */
     public boolean isRight() {
         return this == TOP_RIGHT || this == MIDDLE_RIGHT || this == BOTTOM_RIGHT;

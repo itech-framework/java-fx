@@ -46,13 +46,13 @@ Add to your project via Maven:
     <dependency>
         <groupId>io.github.itech-framework</groupId>
         <artifactId>core</artifactId>
-        <version>1.0.12-RC1</version>
+        <version>${framework-version}</version>
     </dependency>
 
     <dependency>
         <groupId>io.github.itech-framework</groupId>
         <artifactId>java-fx</artifactId>
-        <version>1.0.12-RC1</version>
+        <version>${framework-version}</version>
     </dependency>
 </dependencies>
 ```

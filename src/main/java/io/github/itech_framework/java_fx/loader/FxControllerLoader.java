@@ -34,7 +34,7 @@ public final class FxControllerLoader {
                     + ". Add fx:controller=\"your.package.YourController\" to the root element of the FXML file.");
         }
         Class<?> controllerType = controller.getClass();
-        if (ComponentStore.getComponent(controllerType).isEmpty()) {
+        if (ComponentStore.current().getComponent(controllerType).isEmpty()) {
             throw new FrameworkException("Controller " + controllerType.getName() + " used by " + fxmlPath
                     + " is not registered. Annotate it with @FxController and keep it inside the @ComponentScan package.");
         }
@@ -61,7 +61,7 @@ public final class FxControllerLoader {
             throw new FrameworkException("Failed to create FXML controller " + type.getName(), e);
         }
 
-        if (ComponentStore.hasComponent(type)) {
+        if (ComponentStore.current().hasComponent(type)) {
             ComponentProcessor.injectFields(type, instance);
         }
         return instance;

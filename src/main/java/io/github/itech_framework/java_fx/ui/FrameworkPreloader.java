@@ -172,7 +172,8 @@ public class FrameworkPreloader extends Preloader {
 
     private boolean storedDarkMode(String key) {
         try {
-            String stored = new DefaultDataStorageService().load(key);
+            Class<?> main = ITechJavaFxApplication.getMainClass();
+            String stored = new DefaultDataStorageService(main).load(key);
             return stored != null && Boolean.parseBoolean(stored.replace("\"", ""));
         } catch (RuntimeException e) {
             logger.debug("Could not read the stored dark mode value", e);

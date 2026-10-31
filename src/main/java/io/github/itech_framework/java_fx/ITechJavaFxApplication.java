@@ -8,9 +8,9 @@ import org.apache.logging.log4j.Logger;
 import io.github.itech_framework.core.annotations.ComponentScan;
 import io.github.itech_framework.core.annotations.jfx.EnableJavaFx;
 import io.github.itech_framework.core.exceptions.FrameworkException;
+import io.github.itech_framework.core.processor.components_processor.ApplicationContext;
 import io.github.itech_framework.core.processor.components_processor.ComponentProcessor;
 import io.github.itech_framework.core.resourcecs.CleanupRegistry;
-import io.github.itech_framework.core.store.ComponentStore;
 import io.github.itech_framework.core.utils.PropertiesLoader;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.processor.JavaFxComponentProcessor;
@@ -63,11 +63,7 @@ public abstract class ITechJavaFxApplication extends Application {
 	public final void init() throws Exception {
 	    try {
 	        progress(0.1);
-	        if (!ComponentStore.hasComponent(Router.class)) {
-	            ComponentStore.registerComponent(Router.class.getName(), router, ComponentProcessor.DEFAULT_LEVEL);
-	        }
-	        progress(0.2);
-	        JavaFxComponentProcessor.initializeFxControllers(mainClass);
+	        JavaFxComponentProcessor.initializeFxControllers(mainClass, router);
 	        progress(0.5);
 	        ComponentProcessor.injectFields(mainClass, this);
 	        progress(0.7);
@@ -109,23 +105,35 @@ public abstract class ITechJavaFxApplication extends Application {
 
 	@Override
 	public void stop() throws Exception {
-		logger.debug("Framework resources is cleaning up...");
-		try {
-			SmoothScroll.setEnabled(false);
-			router.shutdown();
-			onShutdown();
-		} catch (Exception e) {
-			logger.error("Error while shutting down the application", e);
-		}
-		if (FxSettings.get().app().exitOnStop()) {
-			BackgroundTaskService.getInstance().shutdown();
-			NotificationCenter.getInstance().stop();
-			SystemNotificationService.getInstance().shutdown();
-			Platform.exit();
-			System.exit(0);
-		} else {
-			CleanupRegistry.cleanup();
-		}
+	    logger.debug("Framework resources is cleaning up...");
+	    try {
+	        SmoothScroll.setEnabled(false);
+	        router.shutdown();
+	        onShutdown();
+	    } catch (Exception e) {
+	        logger.error("Error while shutting down the application", e);
+	    }
+	    closeContext();
+	    if (FxSettings.get().app().exitOnStop()) {
+	        BackgroundTaskService.getInstance().shutdown();
+	        NotificationCenter.getInstance().stop();
+	        SystemNotificationService.getInstance().shutdown();
+	        Platform.exit();
+	        System.exit(0);
+	    }
+	}
+
+	private void closeContext() {
+	    try {
+	        ApplicationContext context = ComponentProcessor.context();
+	        if (context != null) {
+	            context.close();
+	        } else {
+	            CleanupRegistry.current().cleanup();
+	        }
+	    } catch (RuntimeException e) {
+	        logger.error("Cleanup finished with failures", e);
+	    }
 	}
 	
 	private void progress(double value) throws InterruptedException {

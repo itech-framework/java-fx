@@ -406,6 +406,26 @@ To use the application with a database directly:
 
 Follow the module documentation to use these tools.
 
+## Upgrading to 1.1.0 ⬆️
+
+Use the same version for the core and every module, and rebuild your application against it.
+
+**Behavior changes**
+- Add a Log4j 2 implementation to your application. The module no longer brings `log4j-core`.
+- Background services, notifications and the tray icon are now stopped on every `stop()`. `fx.app.exit-on-stop` only decides whether the JVM exits.
+- If startup validation fails, the application context is closed before the error is thrown.
+- `@ComponentScan` is required next to `@EnableJavaFx`.
+- `@OnInit` and `@PreDestroy` methods in a controller's base class now run. Remove manual `super.init()` calls that would run them twice.
+- A controller that still uses `@Rx` fails when its first screen loads.
+- `FxComponentLoader.load` fails for a class without `@FxComponent`.
+- `BackgroundTaskService.executeRunnable` and `scheduleTask` fail their `Future` when the task throws.
+- `SystemNotificationService.show` returns a `boolean`.
+- A notification that could not be shown is tried again on the next poll.
+
+**Compatible changes**
+- `FxThread.call(supplier, timeout, unit)`, `FxTheme.storedDarkMode()` and `FxComponent` with an empty default value.
+- The jar has the module name `io.github.itech_framework.java_fx`.
+
 ## Migrating from `@Rx`
 
 | Old              | New        |

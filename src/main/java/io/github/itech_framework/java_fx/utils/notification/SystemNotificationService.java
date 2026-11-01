@@ -68,17 +68,17 @@ public class SystemNotificationService {
         EventQueue.invokeLater(() -> addTrayIcon(image, tooltip));
     }
 
-    public void show(String title, String message, Type type) {
-        show(title, message, type, null);
+    public boolean show(String title, String message, Type type) {
+        return show(title, message, type, null);
     }
 
-    public void show(String title, String message, Type type, Runnable onClick) {
+    public boolean show(String title, String message, Type type, Runnable onClick) {
         TrayIcon icon = trayIcon;
         if (icon == null) {
-            logger.info("System notification skipped, tray icon is not installed");
-            return;
+            logger.debug("System notification skipped, tray icon is not installed");
+            return false;
         }
-        logger.info("Showing system notification '{}'", title);
+        logger.debug("Showing system notification '{}'", title);
         pendingAction = onClick;
         TrayIcon.MessageType kind = switch (type == null ? Type.INFO : type) {
             case INFO -> TrayIcon.MessageType.INFO;
@@ -87,6 +87,7 @@ public class SystemNotificationService {
             case NONE -> TrayIcon.MessageType.NONE;
         };
         EventQueue.invokeLater(() -> icon.displayMessage(title, message, kind));
+        return true;
     }
 
     public void showIfInactive(String title, String message, Type type, Runnable onClick, Runnable inAppFallback) {
@@ -111,9 +112,10 @@ public class SystemNotificationService {
         return current != null && current.isShowing() && !current.isIconified() && current.isFocused();
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         TrayIcon icon = trayIcon;
         trayIcon = null;
+        installed = false;
         if (icon != null) {
             SystemTray.getSystemTray().remove(icon);
         }

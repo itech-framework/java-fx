@@ -93,8 +93,9 @@ public class BackgroundTaskService {
         return executor.submit(() -> {
             try {
                 task.run();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error("Uncaught background error", e);
+                throw e;
             }
         });
     }
@@ -103,8 +104,9 @@ public class BackgroundTaskService {
         return scheduledExecutor.schedule(() -> {
             try {
                 task.run();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error("Uncaught scheduled task error", e);
+                throw e;
             }
         }, delay, unit);
     }
@@ -128,13 +130,15 @@ public class BackgroundTaskService {
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
         } catch (IllegalStateException ignored) {
         }
-        executor.shutdownNow();
         scheduledExecutor.shutdownNow();
+        executor.shutdown();
         try {
             if (!executor.awaitTermination(shutdownWaitMillis, TimeUnit.MILLISECONDS)) {
-                logger.warn("Background tasks did not terminate in time");
+                logger.warn("Background tasks did not terminate in time, interrupting them");
+                executor.shutdownNow();
             }
         } catch (InterruptedException e) {
+            executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }

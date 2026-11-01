@@ -1,10 +1,5 @@
 package io.github.itech_framework.java_fx.input.validations.validator;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 public class ValidationResult {
     private final boolean valid;
     private final String message;

@@ -138,6 +138,13 @@ public class BackgroundTaskService {
             Thread.currentThread().interrupt();
         }
     }
+    
+    public static void shutdownInstance() {
+        BackgroundTaskService local = instance;
+        if (local != null) {
+            local.shutdown();
+        }
+    }
 
     private static ThreadFactory threadFactory(String prefix, boolean daemon) {
         AtomicInteger counter = new AtomicInteger(1);

@@ -13,6 +13,7 @@ import io.github.itech_framework.core.processor.components_processor.ComponentPr
 import io.github.itech_framework.core.resourcecs.CleanupRegistry;
 import io.github.itech_framework.core.utils.PropertiesLoader;
 import io.github.itech_framework.java_fx.config.FxSettings;
+import io.github.itech_framework.java_fx.events.EventBus;
 import io.github.itech_framework.java_fx.processor.JavaFxComponentProcessor;
 import io.github.itech_framework.java_fx.router.Router;
 import io.github.itech_framework.java_fx.ui.FrameworkPreloader;
@@ -114,10 +115,11 @@ public abstract class ITechJavaFxApplication extends Application {
 	        logger.error("Error while shutting down the application", e);
 	    }
 	    closeContext();
+	    BackgroundTaskService.shutdownInstance();
+	    NotificationCenter.stopInstance();
+	    SystemNotificationService.shutdownInstance();
+	    EventBus.clearAll();
 	    if (FxSettings.get().app().exitOnStop()) {
-	        BackgroundTaskService.getInstance().shutdown();
-	        NotificationCenter.getInstance().stop();
-	        SystemNotificationService.getInstance().shutdown();
 	        Platform.exit();
 	        System.exit(0);
 	    }

@@ -94,6 +94,17 @@ public class NotificationCenter {
         }
         releaseResources();
     }
+    
+    public static void stopInstance() {
+        NotificationCenter local;
+        synchronized (NotificationCenter.class) {
+            local = instance;
+            instance = null;
+        }
+        if (local != null) {
+            local.stop();
+        }
+    }
 
     private boolean sourceEnabled(NotificationSource source) {
         String value = PropertiesLoader.getProperty("fx.notification.source." + source.name() + ".enabled", "true");
@@ -115,7 +126,7 @@ public class NotificationCenter {
 
     private void releaseResources() {
         scope.cancelAll();
-        SystemNotificationService.getInstance().shutdown();
+        SystemNotificationService.shutdownInstance();
     }
 
     private void poll() {

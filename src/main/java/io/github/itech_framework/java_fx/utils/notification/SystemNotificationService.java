@@ -118,6 +118,17 @@ public class SystemNotificationService {
             SystemTray.getSystemTray().remove(icon);
         }
     }
+    
+    public static void shutdownInstance() {
+        SystemNotificationService local;
+        synchronized (SystemNotificationService.class) {
+            local = instance;
+            instance = null;
+        }
+        if (local != null) {
+            local.shutdown();
+        }
+    }
 
     private void addTrayIcon(Image image, String tooltip) {
         PopupMenu menu = new PopupMenu();

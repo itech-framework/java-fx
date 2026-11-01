@@ -44,9 +44,11 @@ public abstract class ITechJavaFxApplication extends Application {
 		mainClass = clazz;
 
 		ComponentScan scan = clazz.getAnnotation(ComponentScan.class);
-		if (scan != null) {
-			PropertiesLoader.load(scan.properties(), clazz);
+		if (scan == null) {
+		    throw new FrameworkException("Class " + clazz.getName() + " needs @ComponentScan next to @EnableJavaFx");
 		}
+		PropertiesLoader.load(scan.properties(), clazz);
+		
 		FxSettings settings = FxSettings.reload();
 
 		if (settings.preloader().enabled() && System.getProperty("javafx.preloader") == null) {

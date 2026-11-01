@@ -17,10 +17,15 @@ public class JavaFxComponentProcessor {
 	            store.registerComponent(Router.class.getName(), router, ComponentProcessor.DEFAULT_LEVEL);
 	        }
 	    });
-	    if (FxSettings.get().app().controllersRequired()) {
-	        validateFxControllers(context);
+	    try {
+	        if (FxSettings.get().app().controllersRequired()) {
+	            validateFxControllers(context);
+	        }
+	        registerNotificationSources(context);
+	    } catch (RuntimeException e) {
+	        context.close();
+	        throw e;
 	    }
-	    registerNotificationSources(context);
 	}
 
     private static void registerNotificationSources(ApplicationContext context) {

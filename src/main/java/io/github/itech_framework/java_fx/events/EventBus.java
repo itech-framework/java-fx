@@ -2,17 +2,28 @@ package io.github.itech_framework.java_fx.events;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class EventBus {
-    private static final Map<String, Map<String, Consumer<Object>>> listeners = new HashMap<>();
+	private static final Logger logger = LogManager.getLogger(EventBus.class);
+	private static final Map<String, Map<String, Consumer<Object>>> listeners = new ConcurrentHashMap<>();
+	private static final ExecutorService ASYNC = Executors.newCachedThreadPool(runnable -> {
+	    Thread thread = new Thread(runnable, "fx-event-bus");
+	    thread.setDaemon(true);
+	    return thread;
+	});
 
     /**
      * Subscribe a listener with a unique ID
@@ -25,8 +36,7 @@ public class EventBus {
      * Subscribe a listener with a specific ID
      */
     public static String subscribe(String eventType, String listenerId, Consumer<Object> listener) {
-        unsubscribe(eventType, listenerId);
-    	listeners.computeIfAbsent(eventType, k -> new HashMap<>()).put(listenerId, listener);
+        listeners.computeIfAbsent(eventType, k -> new ConcurrentHashMap<>()).put(listenerId, listener);
         return listenerId;
     }
 
@@ -63,14 +73,12 @@ public class EventBus {
     public static void publish(String eventType, Object data) {
         Map<String, Consumer<Object>> eventListeners = listeners.get(eventType);
         if (eventListeners != null) {
-            // Create a copy of values to avoid ConcurrentModificationException
             List<Consumer<Object>> listenersCopy = new ArrayList<>(eventListeners.values());
             listenersCopy.forEach(listener -> {
                 try {
                     listener.accept(data);
                 } catch (Exception e) {
-                    // Log the error but continue with other listeners
-                    System.err.println("Error in event listener for event: " + eventType);
+                	logger.error("Error in event listener for event: {}", eventType, e);
                     e.printStackTrace();
                 }
             });
@@ -83,19 +91,14 @@ public class EventBus {
     public static void publishAsync(String eventType, Object data) {
         Map<String, Consumer<Object>> eventListeners = listeners.get(eventType);
         if (eventListeners != null) {
-            // Create a copy of values to avoid ConcurrentModificationException
             List<Consumer<Object>> listenersCopy = new ArrayList<>(eventListeners.values());
-            listenersCopy.forEach(listener -> {
-                // Execute each listener in a separate thread
-                new Thread(() -> {
-                    try {
-                        listener.accept(data);
-                    } catch (Exception e) {
-                        System.err.println("Error in async event listener for event: " + eventType);
-                        e.printStackTrace();
-                    }
-                }).start();
-            });
+            listenersCopy.forEach(listener -> ASYNC.execute(() -> {
+                try {
+                    listener.accept(data);
+                } catch (Exception e) {
+                    logger.error("Error in async event listener for event: {}", eventType, e);
+                }
+            }));
         }
     }
 
@@ -105,14 +108,13 @@ public class EventBus {
     public static void publishAsync(String eventType, Object data, java.util.concurrent.ExecutorService executor) {
         Map<String, Consumer<Object>> eventListeners = listeners.get(eventType);
         if (eventListeners != null) {
-            // Create a copy of values to avoid ConcurrentModificationException
             List<Consumer<Object>> listenersCopy = new ArrayList<>(eventListeners.values());
             listenersCopy.forEach(listener -> {
                 executor.submit(() -> {
                     try {
                         listener.accept(data);
                     } catch (Exception e) {
-                        System.err.println("Error in async event listener for event: " + eventType);
+                    	logger.error("Error in async event listener for event: {}", eventType, e);
                         e.printStackTrace();
                     }
                 });

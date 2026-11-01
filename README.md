@@ -516,9 +516,8 @@ Each string in `rows` is one row. Keys are separated by spaces.
 | `{next}` | Switches to the next layout in the cycle. |
 | `{layout:id}` | Switches to a specific layout. |
 | `=Label` | Renames a key, for example `{enter=OK}`. |
-| `*weight` | Widens a key, for example `{space*5}` is five key units wide. |
+| `*weight` | Widens a key, for example `{space*5}` is five key units wide. Because keys are split on spaces, a space key must be written `{space}`. |
 
-Because keys are split on spaces, a space key must be written `{space}`.
 
 ### Value order
 

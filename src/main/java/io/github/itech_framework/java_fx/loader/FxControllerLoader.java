@@ -27,7 +27,13 @@ public final class FxControllerLoader {
 
         FXMLLoader loader = new FXMLLoader(location);
         loader.setControllerFactory(FxControllerLoader::createController);
-        T root = loader.load();
+        T root;
+        try {
+            root = loader.load();
+        } catch (Exception e) {
+            FxOwnership.disposeChildren(loader.getController());
+            throw e;
+        }
 
         Object controller = loader.getController();
         if (controller == null) {
@@ -41,7 +47,16 @@ public final class FxControllerLoader {
         }
 
         KeyboardBinder.bind(controller);
-        ComponentProcessor.runInitMethods(controllerType, controller);
+        try {
+            if (ComponentStore.current().getComponent(controllerType).isEmpty()) {
+                throw new FrameworkException("Controller " + controllerType.getName() + " used by " + fxmlPath
+                        + " is not registered. Annotate it with @FxController and keep it inside the @ComponentScan package.");
+            }
+            ComponentProcessor.runInitMethods(controllerType, controller);
+        } catch (RuntimeException e) {
+            FxOwnership.disposeChildren(controller);
+            throw e;
+        }
         return new Result<>(root, (C) controller);
     }
 
@@ -65,13 +80,18 @@ public final class FxControllerLoader {
 
         if (ComponentStore.current().hasComponent(type)) {
             ComponentProcessor.injectFields(type, instance);
+            FxInjector.inject(instance);
         }
         return instance;
     }
 
     public static void dispose(Object controller) {
         if (controller != null) {
-            ComponentProcessor.destroyInstance(controller.getClass(), controller);
+            try {
+                ComponentProcessor.destroyInstance(controller.getClass(), controller);
+            } finally {
+                FxOwnership.disposeChildren(controller);
+            }
         }
     }
 

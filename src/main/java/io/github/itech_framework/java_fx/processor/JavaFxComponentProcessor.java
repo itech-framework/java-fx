@@ -3,8 +3,10 @@ package io.github.itech_framework.java_fx.processor;
 import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.core.processor.components_processor.ApplicationContext;
 import io.github.itech_framework.core.processor.components_processor.ComponentProcessor;
+import io.github.itech_framework.core.resourcecs.CleanupRegistry;
 import io.github.itech_framework.java_fx.annotations.FxController;
 import io.github.itech_framework.java_fx.config.FxSettings;
+import io.github.itech_framework.java_fx.loader.FxOwnership;
 import io.github.itech_framework.java_fx.router.Router;
 import io.github.itech_framework.java_fx.ui.keyboard.KeyboardBootstrap;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
@@ -24,6 +26,8 @@ public class JavaFxComponentProcessor {
 	        }
 	        registerNotificationSources(context);
 	        KeyboardBootstrap.initialize(context);
+	        
+            context.cleanupRegistry().register(FxOwnership::disposeAll, CleanupRegistry.BEFORE_BEANS);
 	    } catch (RuntimeException e) {
 	        context.close();
 	        throw e;

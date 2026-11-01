@@ -14,7 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.itech_framework.core.exceptions.FrameworkException;
-import io.github.itech_framework.core.processor.components_processor.ComponentProcessor;
 import io.github.itech_framework.core.utils.validator.CommonValidator;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.exceptions.DuplicateConfigKey;
@@ -532,7 +531,7 @@ public class Router {
             return;
         }
         try {
-            ComponentProcessor.destroyInstance(controller.getClass(), controller);
+        	FxControllerLoader.dispose(controller);
         } catch (RuntimeException e) {
             logger.error("Error destroying {}", controller.getClass().getSimpleName(), e);
         }

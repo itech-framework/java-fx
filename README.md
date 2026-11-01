@@ -192,7 +192,37 @@ public class WelcomeWidget {
     }
     ```
   - The component lifecycle is managed with `@OnInit` and `@PreDestroy`, the same as `FxController`.
+### Injecting components with `@FxUse`
 
+Instead of calling `FxComponentLoader.load` yourself, declare the component in a controller or in another `@FxComponent`:
+
+```java
+@FxController
+public class DashboardController {
+    @FxUse
+    private FxProvider<WelcomeWidget> welcome;
+
+    @FxUse(scope = FxScope.PROTOTYPE)
+    private FxProvider<TaskRow> rows;
+
+    @OnInit
+    private void init() {
+        content.getChildren().add(welcome.get().getRoot());
+    }
+
+    private void addRow(Task task) {
+        content.getChildren().add(rows.create(task).getRoot());
+    }
+}
+```
+
+- `FxProvider<T>` loads nothing until you call it. `get()` returns one instance per owner by default (`FxScope.OWNER`) and a new instance on every call with `FxScope.PROTOTYPE`. `create(args...)` always builds a new instance. `release(instance)` destroys one early.
+- `@FxUse WelcomeWidget widget;` (the class itself) loads the component when its owner is created. Use it only for small, always-visible parts. It cannot use `FxScope.PROTOTYPE`.
+- Components are created on the JavaFX thread, even when you call `get()` from another thread.
+- When the owner is destroyed, its own `@PreDestroy` runs first and then the `@PreDestroy` methods of everything it created, newest first. Anything still alive when the application shuts down is destroyed too. If a load fails, the children created so far are destroyed.
+- Do not add the same shared component's root node to two screens. A JavaFX node can only have one parent.
+- A warning is logged when one provider holds more than `fx.components.live-warn` live instances (default 100). Release instances you no longer need, or reuse one component instead of creating one per item.
+- `@FxUse` works in classes the framework loads from FXML (controllers and `@FxComponent`s), not in ordinary `@Component` services.
 ## Configuration ⚙️
 
 All keys go in `application.properties` (or a profile override such as `application-dev.properties`). Every key has a default, so you only need to set the ones you want to change.
@@ -275,6 +305,8 @@ fx.keyboard.max-key-width=96
 fx.keyboard.inherit-theme=true
 fx.keyboard.style-class=fxvk
 fx.keyboard.stylesheet=
+
+fx.components.live-warn=100
 ```
 
 ### Application
@@ -334,6 +366,7 @@ The preloader is the splash window shown while the framework builds and injects 
 | Key | Default | Description |
 |-----|---------|-------------|
 | `fx.components.fxml-base` | `/views/` | Base classpath folder for FXML files. |
+| `fx.components.live-warn` | `100` | Logs a warning when one `FxProvider` holds more live instances than this. |
 
 ### Background Tasks
 

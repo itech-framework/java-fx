@@ -36,8 +36,7 @@ public final class FxSettings {
 			String contentContainerId, int maxRedirects) {
 	}
 
-	public record Components(String fxmlBase) {
-	}
+	public record Components(String fxmlBase, int liveWarn) {}
 
 	public record Background(int threads, int scheduledThreads, boolean daemon, long shutdownWaitMillis) {
 	}
@@ -192,8 +191,9 @@ public final class FxSettings {
 				in.string("fx.router.content-container-id", "contentContainer"),
 				(int) in.number("fx.router.max-redirects", 10, 1, 100));
 
-		Components components = new Components(in.directory("fx.components.fxml-base", "/views/"));
-
+        Components components = new Components(in.directory("fx.components.fxml-base", "/views/"),
+                (int) in.number("fx.components.live-warn", 100, 1, 100000));
+        
 		Background background = new Background((int) in.number("fx.background.threads", 4, 1, 64),
 				(int) in.number("fx.background.scheduled-threads", 2, 1, 64), in.bool("fx.background.daemon", true),
 				(long) in.number("fx.background.shutdown-wait-ms", 1000, 0, 60000));

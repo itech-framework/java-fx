@@ -3,10 +3,9 @@ package io.github.itech_framework.java_fx.ui.dialog;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import io.github.itech_framework.core.utils.DataStorageUtil;
 import io.github.itech_framework.core.utils.validator.CommonValidator;
-import io.github.itech_framework.java_fx.router.config.RouterConfig;
 import io.github.itech_framework.java_fx.utils.FxResources;
+import io.github.itech_framework.java_fx.utils.FxTheme;
 import io.github.itech_framework.java_fx.utils.FxThread;
 import io.github.itech_framework.java_fx.utils.node.StyleUtils;
 import javafx.animation.Animation;
@@ -274,8 +273,7 @@ public abstract class AbstractFxDialog {
     }
 
     private static Boolean darkMode() {
-        Object value = DataStorageUtil.load(RouterConfig.getDarkModeKey());
-        return value == null ? null : Boolean.valueOf(value.toString());
+        return FxTheme.storedDarkMode();
     }
 
     private void applyDarkModeStyle() {

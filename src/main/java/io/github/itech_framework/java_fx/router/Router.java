@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.core.processor.components_processor.ComponentProcessor;
-import io.github.itech_framework.core.utils.DataStorageUtil;
 import io.github.itech_framework.core.utils.validator.CommonValidator;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.exceptions.DuplicateConfigKey;
@@ -34,6 +33,7 @@ import io.github.itech_framework.java_fx.router.core.Route;
 import io.github.itech_framework.java_fx.ui.layout.LayoutConfig;
 import io.github.itech_framework.java_fx.ui.layout.LayoutController;
 import io.github.itech_framework.java_fx.utils.FxResources;
+import io.github.itech_framework.java_fx.utils.FxTheme;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -421,11 +421,10 @@ public class Router {
 
     private void applyTheme(Scene scene) {
         FxSettings.Theme theme = FxSettings.get().theme();
-        Object stored = DataStorageUtil.load(theme.darkModeKey());
-        if (stored == null) {
+        Boolean dark = FxTheme.storedDarkMode();
+        if (dark == null) {
             return;
         }
-        boolean dark = Boolean.parseBoolean(String.valueOf(stored).replace("\"", ""));
         ObservableList<String> styleClasses = scene.getRoot().getStyleClass();
         if (dark) {
             if (!styleClasses.contains(theme.darkStyleClass())) {

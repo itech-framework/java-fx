@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import javafx.application.Platform;
 
 public final class FxThread {
+    private static final long DEFAULT_TIMEOUT_SECONDS = 30;
 
     private FxThread() {
     }
@@ -21,12 +22,19 @@ public final class FxThread {
         }
     }
 
+    public static <T> T call(Supplier<T> supplier) {
+        return call(supplier, DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    }
+
     public static <T> T call(Supplier<T> supplier, long timeout, TimeUnit unit) {
         if (Platform.isFxApplicationThread()) {
             return supplier.get();
         }
         CompletableFuture<T> future = new CompletableFuture<>();
         Platform.runLater(() -> {
+            if (future.isDone()) {
+                return;
+            }
             try {
                 future.complete(supplier.get());
             } catch (Throwable t) {
@@ -37,7 +45,8 @@ public final class FxThread {
             return future.get(timeout, unit);
         } catch (TimeoutException e) {
             future.cancel(false);
-            throw new IllegalStateException("The UI thread did not run the action within " + timeout + " " + unit, e);
+            throw new IllegalStateException("The UI thread did not run the action within " + timeout + " " + unit
+                    + ". The UI thread may be blocked, for example by code that waits for this thread.", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);

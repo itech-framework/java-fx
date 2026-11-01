@@ -15,5 +15,5 @@ import io.github.itech_framework.core.annotations.components.policy.DisableLoade
 @DisableLoaded
 @IgnoreInterfaces
 public @interface FxComponent {
-    String value();
+	String value() default "";
 }

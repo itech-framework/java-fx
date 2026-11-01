@@ -24,26 +24,28 @@ public final class FxComponentLoader {
     }
 
     public static <T> T load(Class<T> clazz, Object... constructorArgs) {
+        FxComponent annotation = clazz.getAnnotation(FxComponent.class);
+        if (annotation == null) {
+            throw new FrameworkException("Class " + clazz.getName()
+                    + " must be annotated with @FxComponent to be loaded by FxComponentLoader");
+        }
         try {
             Constructor<T> constructor = findMatchingConstructor(clazz, constructorArgs);
             constructor.setAccessible(true);
             T instance = constructor.newInstance(constructorArgs);
 
-            FxComponent annotation = clazz.getAnnotation(FxComponent.class);
-            if (annotation != null) {
-                String fxmlPath = annotation.value().isEmpty()
-                        ? FxSettings.get().components().fxmlBase() + clazz.getSimpleName() + ".fxml"
-                        : annotation.value();
-                URL location = FxResources.require(clazz, fxmlPath, "FXML view of @FxComponent " + clazz.getSimpleName());
+            String fxmlPath = annotation.value().isEmpty()
+                    ? FxSettings.get().components().fxmlBase() + clazz.getSimpleName() + ".fxml"
+                    : annotation.value();
+            URL location = FxResources.require(clazz, fxmlPath, "FXML view of @FxComponent " + clazz.getSimpleName());
 
-                FXMLLoader loader = new FXMLLoader(location);
-                loader.setController(instance);
-                ComponentProcessor.injectFields(clazz, instance);
-                Parent fxmlRoot = loader.load();
+            FXMLLoader loader = new FXMLLoader(location);
+            loader.setController(instance);
+            ComponentProcessor.injectFields(clazz, instance);
+            Parent fxmlRoot = loader.load();
 
-                injectRootAnnotatedField(instance, fxmlRoot);
-                ComponentProcessor.runInitMethods(clazz, instance);
-            }
+            injectRootAnnotatedField(instance, fxmlRoot);
+            ComponentProcessor.runInitMethods(clazz, instance);
             return instance;
         } catch (FrameworkException e) {
             throw e;
@@ -59,18 +61,21 @@ public final class FxComponentLoader {
     }
 
     private static <T> void injectRootAnnotatedField(T controller, Parent root) {
-        Field rootField = null;
-        for (Field field : controller.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(Root.class)) {
-                if (rootField != null) {
-                    throw new FrameworkException("Multiple fields annotated with @Root in " + controller.getClass().getName());
-                }
-                if (!Parent.class.isAssignableFrom(field.getType())) {
-                    throw new FrameworkException("@Root field must be of type Parent or subclass: " + field.getName());
-                }
-                rootField = field;
-            }
-        }
+    	Field rootField = null;
+    	for (Class<?> type = controller.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+    	    for (Field field : type.getDeclaredFields()) {
+    	        if (!field.isAnnotationPresent(Root.class)) {
+    	            continue;
+    	        }
+    	        if (rootField != null) {
+    	            throw new FrameworkException("Multiple fields annotated with @Root in " + controller.getClass().getName());
+    	        }
+    	        if (!Parent.class.isAssignableFrom(field.getType())) {
+    	            throw new FrameworkException("@Root field must be of type Parent or subclass: " + field.getName());
+    	        }
+    	        rootField = field;
+    	    }
+    	}
 
         if (rootField == null) {
             throw new FrameworkException("No field annotated with @Root found in " + controller.getClass().getName()

@@ -2,6 +2,8 @@ package io.github.itech_framework.java_fx.utils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import javafx.application.Platform;
@@ -19,7 +21,7 @@ public final class FxThread {
         }
     }
 
-    public static <T> T call(Supplier<T> supplier) {
+    public static <T> T call(Supplier<T> supplier, long timeout, TimeUnit unit) {
         if (Platform.isFxApplicationThread()) {
             return supplier.get();
         }
@@ -32,7 +34,10 @@ public final class FxThread {
             }
         });
         try {
-            return future.get();
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(false);
+            throw new IllegalStateException("The UI thread did not run the action within " + timeout + " " + unit, e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);

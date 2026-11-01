@@ -46,7 +46,7 @@ import javafx.scene.control.TextInputControl;
  * </ul>
  *
  * @author SaiZawMyint
- * @see io.github.itech_framework.java_fx.annotations.Keyboard
+ * @see io.github.itech_framework.java_fx.annotations.ui.Keyboard
  * @see KeyboardLayout
  * @since 1.1.0
  */

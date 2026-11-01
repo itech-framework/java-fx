@@ -3,6 +3,10 @@ package io.github.itech_framework.java_fx.ui.keyboard;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.Node;
@@ -14,11 +18,17 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
 public final class VirtualKeyboard extends Region {
     private final List<List<KeyboardKey>> rowKeys = new ArrayList<>();
     private final List<List<Node>> rowNodes = new ArrayList<>();
     private final List<String> cycle = new ArrayList<>();
+    private static final double REPEAT_DELAY_MS = 400;
+    private static final double REPEAT_INTERVAL_MS = 60;
+
+    private PauseTransition repeatDelay;
+    private Timeline repeatLoop;
 
     private KeyboardLayout layout;
     private TextInputControl target;
@@ -28,8 +38,6 @@ public final class VirtualKeyboard extends Region {
     private double maxKeyWidth = 96;
     private Runnable onHide = () -> {};
     
-    private static final String LANGUAGE_LABEL = "\uD83C\uDF10";
-
     public VirtualKeyboard(String styleClass) {
         if (styleClass != null && !styleClass.isBlank()) {
             getStyleClass().add(styleClass);
@@ -127,7 +135,7 @@ public final class VirtualKeyboard extends Region {
                 break;
             }
         }
-        bottom.add(at, KeyboardKey.nextLayout(LANGUAGE_LABEL).styleClass("language-key"));
+        bottom.add(at, KeyboardKey.nextLayout(KeyboardConfig.current().languageLabel()).styleClass("language-key"));
         rows.set(last, bottom);
         return rows;
     }
@@ -162,9 +170,16 @@ public final class VirtualKeyboard extends Region {
         node.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
             event.consume();
             press(key);
+            if (key.action() == KeyAction.BACKSPACE) {
+                startRepeat();
+            }
         });
         node.addEventHandler(MouseEvent.MOUSE_CLICKED, Event::consume);
-        node.addEventHandler(MouseEvent.MOUSE_RELEASED, Event::consume);
+        node.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            event.consume();
+            stopRepeat();
+        });
+        node.addEventHandler(MouseEvent.MOUSE_EXITED, event -> stopRepeat());
         return node;
     }
 
@@ -226,6 +241,28 @@ public final class VirtualKeyboard extends Region {
         }
         Event.fireEvent(target, new KeyEvent(KeyEvent.KEY_PRESSED, "", "\t", KeyCode.TAB,
                 false, false, false, false));
+    }
+    
+    private void startRepeat() {
+        stopRepeat();
+        Timeline loop = new Timeline(new KeyFrame(Duration.millis(REPEAT_INTERVAL_MS), event -> backspace()));
+        loop.setCycleCount(Animation.INDEFINITE);
+        PauseTransition delay = new PauseTransition(Duration.millis(REPEAT_DELAY_MS));
+        delay.setOnFinished(event -> loop.play());
+        repeatLoop = loop;
+        repeatDelay = delay;
+        delay.play();
+    }
+
+    private void stopRepeat() {
+        if (repeatDelay != null) {
+            repeatDelay.stop();
+            repeatDelay = null;
+        }
+        if (repeatLoop != null) {
+            repeatLoop.stop();
+            repeatLoop = null;
+        }
     }
 
     private void clear() {

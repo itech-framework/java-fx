@@ -46,12 +46,8 @@ public final class FxControllerLoader {
                     + " is not registered. Annotate it with @FxController and keep it inside the @ComponentScan package.");
         }
 
-        KeyboardBinder.bind(controller);
         try {
-            if (ComponentStore.current().getComponent(controllerType).isEmpty()) {
-                throw new FrameworkException("Controller " + controllerType.getName() + " used by " + fxmlPath
-                        + " is not registered. Annotate it with @FxController and keep it inside the @ComponentScan package.");
-            }
+            KeyboardBinder.bind(controller);
             ComponentProcessor.runInitMethods(controllerType, controller);
         } catch (RuntimeException e) {
             FxOwnership.disposeChildren(controller);

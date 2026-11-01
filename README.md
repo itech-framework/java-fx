@@ -616,11 +616,13 @@ Use the same version for the core and every module, and rebuild your application
 - `BackgroundTaskService.executeRunnable` and `scheduleTask` fail their `Future` when the task throws.
 - `SystemNotificationService.show` returns a `boolean`.
 - A notification that could not be shown is tried again on the next poll.
+- `KeyboardStyler` was removed. Enable the new on-screen keyboard with `fx.keyboard.enabled=true`. The style class `fxvk` is kept, but the keyboard markup is new, so review any custom `.fxvk` CSS.
 
 **Compatible changes**
 - `FxThread.call(supplier, timeout, unit)`, `FxTheme.storedDarkMode()` and `FxComponent` with an empty default value.
 - The jar has the module name `io.github.itech_framework.java_fx`.
 - The virtual keyboard is new and off by default (`fx.keyboard.enabled=false`).
+- `@FxUse` and `FxProvider` can replace manual `FxComponentLoader.load` calls and dispose the components with their owner.
 
 ## Migrating from `@Rx`
 

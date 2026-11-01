@@ -3,6 +3,7 @@ package io.github.itech_framework.java_fx.ui.keyboard;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.core.processor.components_processor.ApplicationContext;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.utils.FxResources;
@@ -22,6 +23,12 @@ public final class KeyboardBootstrap {
             }
         }
         if (settings.enabled()) {
+        	
+        	List<String> problems = config.validate();
+        	if (!problems.isEmpty()) {
+        	    throw new FrameworkException("Invalid keyboard settings:\n - " + String.join("\n - ", problems));
+        	}
+        	
             if (settings.inheritTheme() && FxSettings.get().theme().enabled()) {
                 FxResources.themeStylesheet();
             }

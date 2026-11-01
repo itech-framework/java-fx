@@ -10,6 +10,7 @@ import io.github.itech_framework.core.processor.components_processor.ComponentPr
 import io.github.itech_framework.java_fx.annotations.components.FxComponent;
 import io.github.itech_framework.java_fx.annotations.components.Root;
 import io.github.itech_framework.java_fx.config.FxSettings;
+import io.github.itech_framework.java_fx.ui.keyboard.KeyboardBinder;
 import io.github.itech_framework.java_fx.utils.FxResources;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -48,6 +49,7 @@ public final class FxComponentLoader {
 			Parent fxmlRoot = loader.load();
 
 			injectRootAnnotatedField(instance, fxmlRoot);
+			KeyboardBinder.bind(instance);
 			ComponentProcessor.runInitMethods(clazz, instance);
 			return instance;
 		} catch (Exception e) {

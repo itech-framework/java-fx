@@ -43,7 +43,7 @@ package io.github.itech_framework.java_fx.ui.keyboard;
  *
  * @author SaiZawMyint
  * @see KeyboardConfig
- * @see io.github.itech_framework.java_fx.annotations.Keyboard
+ * @see io.github.itech_framework.java_fx.annotations.ui.Keyboard
  * @since 1.1.0
  */
 public interface KeyboardConfigurer {

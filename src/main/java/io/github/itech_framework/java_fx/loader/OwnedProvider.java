@@ -16,6 +16,8 @@ final class OwnedProvider<T> implements FxProvider<T> {
     private static final Logger logger = LogManager.getLogger(OwnedProvider.class);
     private static final ThreadLocal<Deque<Class<?>>> CREATING = ThreadLocal.withInitial(ArrayDeque::new);
 
+    private static final int MAX_NESTING = 16;
+    
     private final Class<T> type;
     private final FxScope scope;
     private final ComponentRuntime runtime;
@@ -126,14 +128,11 @@ final class OwnedProvider<T> implements FxProvider<T> {
 
     private T guardedLoad(Object[] args) {
         Deque<Class<?>> stack = CREATING.get();
-        if (stack.contains(type)) {
-            StringBuilder chain = new StringBuilder();
-            for (Iterator<Class<?>> iterator = stack.descendingIterator(); iterator.hasNext();) {
-                chain.append(iterator.next().getSimpleName()).append(" -> ");
-            }
-            chain.append(type.getSimpleName());
-            throw new FrameworkException("Circular @FxComponent creation: " + chain
-                    + ". A component's @OnInit must not create a component that creates it again.");
+        long nesting = stack.stream().filter(type::equals).count();
+        if (nesting >= MAX_NESTING) {
+            throw new FrameworkException(type.getSimpleName() + " is created inside its own initialization more than "
+                    + MAX_NESTING + " levels deep. A component's @OnInit must stop creating components of its own type, "
+                    + "and must not create a component that creates it again without an end.");
         }
         stack.push(type);
         try {

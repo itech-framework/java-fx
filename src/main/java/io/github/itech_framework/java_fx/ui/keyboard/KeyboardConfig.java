@@ -37,7 +37,7 @@ import javafx.scene.control.TextInputControl;
  *
  * @author SaiZawMyint
  * @see KeyboardConfigurer
- * @see io.github.itech_framework.java_fx.annotations.Keyboard
+ * @see io.github.itech_framework.java_fx.annotations.ui.Keyboard
  * @since 1.1.0
  */
 public final class KeyboardConfig {
@@ -53,6 +53,9 @@ public final class KeyboardConfig {
     private double keyGap;
     private double maxKeyWidth;
     private KeyboardScope scope;
+    
+    private static final String DEFAULT_LANGUAGE_LABEL = "\uD83C\uDF10";
+    private String languageLabel = DEFAULT_LANGUAGE_LABEL;
 
     private KeyboardConfig() {}
 
@@ -217,6 +220,15 @@ public final class KeyboardConfig {
     public KeyboardConfig scope(KeyboardScope value) {
         this.scope = value == null ? KeyboardScope.ALL : value;
         return this;
+    }
+    
+    public KeyboardConfig languageLabel(String value) {
+        this.languageLabel = value == null || value.isBlank() ? DEFAULT_LANGUAGE_LABEL : value;
+        return this;
+    }
+
+    public String languageLabel() {
+        return languageLabel;
     }
 
     /** @return the default layout id */

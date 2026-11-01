@@ -43,7 +43,7 @@ import javafx.stage.Window;
  *
  * @author SaiZawMyint
  * @see KeyboardConfig#anchorId(String)
- * @see io.github.itech_framework.java_fx.annotations.Keyboard#anchor()
+ * @see io.github.itech_framework.java_fx.annotations.ui.Keyboard#anchor()
  * @since 1.1.0
  */
 public final class KeyboardAnchors {

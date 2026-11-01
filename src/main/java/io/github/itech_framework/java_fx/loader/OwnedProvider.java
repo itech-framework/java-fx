@@ -11,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.java_fx.annotations.components.FxScope;
+import javafx.scene.Parent;
+import javafx.scene.layout.Pane;
 
 final class OwnedProvider<T> implements FxProvider<T> {
     private static final Logger logger = LogManager.getLogger(OwnedProvider.class);
@@ -97,6 +99,43 @@ final class OwnedProvider<T> implements FxProvider<T> {
         }
         if (tracked) {
             runtime.dispose(instance);
+        }
+    }
+    
+    @Override
+    public void releaseAll() {
+        List<T> pending;
+        synchronized (this) {
+            single = null;
+            pending = new ArrayList<>(live);
+            live.clear();
+        }
+        if (pending.isEmpty()) {
+            return;
+        }
+        runtime.onUiThread(() -> {
+            for (T instance : pending) {
+                detach(instance);
+            }
+            return null;
+        });
+        for (int i = pending.size() - 1; i >= 0; i--) {
+            try {
+                runtime.dispose(pending.get(i));
+            } catch (RuntimeException e) {
+                logger.error("Failed to dispose {}", type.getName(), e);
+            }
+        }
+    }
+
+    private void detach(T instance) {
+        try {
+            Parent root = FxComponentLoader.rootOf(instance);
+            if (root != null && root.getParent() instanceof Pane pane) {
+                pane.getChildren().remove(root);
+            }
+        } catch (RuntimeException e) {
+            logger.error("Failed to detach {}", type.getName(), e);
         }
     }
 

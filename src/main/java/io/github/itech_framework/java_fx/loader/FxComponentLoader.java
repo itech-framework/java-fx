@@ -70,6 +70,25 @@ public final class FxComponentLoader {
             }
 		}
 	}
+	
+	public static Parent rootOf(Object component) {
+	    if (component == null) {
+	        return null;
+	    }
+	    for (Class<?> type = component.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+	        for (Field field : type.getDeclaredFields()) {
+	            if (field.isAnnotationPresent(Root.class) && Parent.class.isAssignableFrom(field.getType())) {
+	                try {
+	                    field.setAccessible(true);
+	                    return (Parent) field.get(component);
+	                } catch (IllegalAccessException e) {
+	                    return null;
+	                }
+	            }
+	        }
+	    }
+	    return null;
+	}
 
 	private static <T> void injectRootAnnotatedField(T controller, Parent root) {
 		Field rootField = null;

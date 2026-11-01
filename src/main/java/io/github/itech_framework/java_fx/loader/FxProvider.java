@@ -8,5 +8,7 @@ public interface FxProvider<T> {
 
     void release(T instance);
 
+    void releaseAll();
+
     int liveCount();
 }

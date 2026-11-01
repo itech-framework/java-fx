@@ -11,7 +11,7 @@ import io.github.itech_framework.java_fx.ui.keyboard.KeyboardLayoutSupplier;
  * Customizes the on-screen keyboard of one text input field, or opts the field
  * out of the keyboard.
  * <p>
- * The annotation is placed on a controller field that is injected from FXML.
+ * The annotation is placed on a field of a controller or an {@code @FxComponent} that is injected from FXML
  * It is read when the FXML is loaded and the result is stored on the control,
  * so the keyboard popup can use it when the field gets focus. It only has an
  * effect when {@code fx.keyboard.enabled=true}.

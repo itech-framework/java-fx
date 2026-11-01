@@ -18,6 +18,7 @@ import io.github.itech_framework.java_fx.processor.JavaFxComponentProcessor;
 import io.github.itech_framework.java_fx.router.Router;
 import io.github.itech_framework.java_fx.ui.FrameworkPreloader;
 import io.github.itech_framework.java_fx.ui.SmoothScroll;
+import io.github.itech_framework.java_fx.ui.keyboard.KeyboardController;
 import io.github.itech_framework.java_fx.utils.concurrent.BackgroundTaskService;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
 import io.github.itech_framework.java_fx.utils.notification.SystemNotificationService;
@@ -74,6 +75,7 @@ public abstract class ITechJavaFxApplication extends Application {
 	        progress(0.9);
 	        onInit();
 	        configureScrolling();
+	        configureKeyboard();
 	        progress(1.0);
 	    } catch (Exception e) {
 	        onStartupFailure(e);
@@ -90,6 +92,19 @@ public abstract class ITechJavaFxApplication extends Application {
 				logger.warn("Smooth scrolling could not be initialized", e);
 			}
 		});
+	}
+	
+	private void configureKeyboard() {
+	    if (!FxSettings.get().keyboard().enabled()) {
+	        return;
+	    }
+	    Platform.runLater(() -> {
+	        try {
+	            KeyboardController.install();
+	        } catch (RuntimeException e) {
+	            logger.warn("Keyboard could not be initialized", e);
+	        }
+	    });
 	}
 
 	protected abstract void onInit() throws Exception;

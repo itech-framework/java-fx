@@ -16,6 +16,7 @@ for building rich desktop interfaces.
 - Toast notifications with fixed-width stacking, style variants and progress support
 - Global application (OS-level) notifications, started automatically by the framework
 - Startup preloader and smooth scrolling
+- On-screen (touch) virtual keyboard built only from public JavaFX APIs, with multiple language layouts
 - Default stylesheet bundled with the library, fully overridable with your own CSS
 
 ## What's New 🆕
@@ -29,6 +30,7 @@ for building rich desktop interfaces.
 - **Dialogs**: `AbstractFxDialog`, `AlertDialog`, `LoadingDialog`, `ModalDialog` and `OwnerEffectGuard` were reviewed for bugs and styling. Dialog styling now also comes from the bundled stylesheet.
 - **Global notifications**: an OS-level notification system that starts automatically with the framework, so the application needs no bootstrap code. Its defaults live in `FxSettings` under the `fx.notification.*` keys, and it is extensible, so modules such as calendar events, tasks or Drive can plug in their own reminders.
 - **Multiple implementations of one interface**: the core `BeanFactory` is being extended so several implementations of the same interface no longer fail at startup, can be injected as a list, and support preferred and ordered selection.
+- **Virtual keyboard**: an opt-in on-screen keyboard for touch devices. It needs no `--add-exports` and no `com.sun.javafx.*` system properties. Layouts are data, so other languages, number pads and custom key orders can be added or replaced. See [Virtual Keyboard](#virtual-keyboard-️).
 
 ## Demo Applications
 - [Daily Planner Application - Framework version 1.0.11+Latest](https://github.com/itech-framework/daily-planner)
@@ -259,6 +261,20 @@ fx.notification.tray-tooltip=Application
 fx.notification.poll-seconds=60
 fx.notification.max-per-cycle=3
 fx.notification.keep-hours=48
+
+fx.keyboard.enabled=false
+fx.keyboard.scope=ALL
+fx.keyboard.layout=qwerty
+fx.keyboard.layouts=
+fx.keyboard.anchor-id=
+fx.keyboard.min-width=0
+fx.keyboard.max-width=0
+fx.keyboard.key-height=52
+fx.keyboard.key-gap=6
+fx.keyboard.max-key-width=96
+fx.keyboard.inherit-theme=true
+fx.keyboard.style-class=fxvk
+fx.keyboard.stylesheet=
 ```
 
 ### Application
@@ -361,6 +377,23 @@ Used by `BackgroundTaskService` and `TaskScope`.
 | `fx.notification.max-per-cycle` | `3` | Maximum notifications shown per poll cycle. This prevents a burst of popups. |
 | `fx.notification.keep-hours` | `48` | How long, in hours, shown notifications are remembered so the same reminder is not shown twice. |
 
+### Virtual Keyboard
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `fx.keyboard.enabled` | `false` | Turn the on-screen keyboard on. When it is off nothing is installed and its stylesheet is not loaded. |
+| `fx.keyboard.scope` | `ALL` | `ALL` gives every editable text input a keyboard. `ANNOTATED` only gives it to fields with `@Keyboard`. |
+| `fx.keyboard.layout` | `qwerty` | Id of the default layout. |
+| `fx.keyboard.layouts` | *(empty)* | Comma separated layout ids that the language key cycles through, for example `qwerty,myanmar`. |
+| `fx.keyboard.anchor-id` | *(empty)* | `fx:id` of the node whose width the keyboard follows. Empty means the window. |
+| `fx.keyboard.min-width` / `max-width` | `0` / `0` | Width limits in pixels. `0` means no limit. `min-width` must not be greater than `max-width`. |
+| `fx.keyboard.key-height` | `52` | Key height in pixels (24 to 200). |
+| `fx.keyboard.key-gap` | `6` | Gap between keys in pixels (0 to 50). |
+| `fx.keyboard.max-key-width` | `96` | Widest a single key unit may grow, in pixels (24 to 400). |
+| `fx.keyboard.inherit-theme` | `true` | Also load the theme stylesheet and copy the dark style class into the keyboard. |
+| `fx.keyboard.style-class` | `fxvk` | Root style class of the keyboard. |
+| `fx.keyboard.stylesheet` | *(empty)* | Optional stylesheet loaded after the bundled `keyboard.css`, so its rules override the defaults. Use a different file name from `keyboard.css`. |
+
 ## Toast Notifications 🍞
 
 Toasts are in-app messages (`io.github.itech_framework.java_fx.ui.toast`: `Toast`, `ToastConfig`, `ToastPosition`, `ToastType`).
@@ -390,6 +423,135 @@ The module includes a global (OS-level) notification system, separate from in-ap
 - It is configured with the `fx.notification.*` keys in [Configuration](#configuration-️).
 - It is **extensible**: modules such as calendar events, tasks or Drive plug in their own reminders. The framework polls them every `fx.notification.poll-seconds`.
 - Set `fx.notification.enabled=false` to turn it off completely.
+
+## Virtual Keyboard ⌨️
+
+An on-screen keyboard for touch devices, built only from public JavaFX APIs. It is shown in a popup when a text input gets focus.
+
+- It is **opt-in**: set `fx.keyboard.enabled=true`.
+- Its width follows an anchor node you choose, or the window when none is set.
+- Layouts are data. You can add languages, change key order or replace a built-in layout.
+- Colors come from your theme variables, and dark mode follows the app automatically.
+
+### Quick start
+
+```properties
+fx.keyboard.enabled=true
+```
+
+With the default scope every editable text input shows the keyboard. Built-in layouts are `qwerty`, `symbols`, `numeric` and `decimal`.
+
+### Choosing which fields get a keyboard
+
+`fx.keyboard.scope=ALL` is the default. To give the keyboard only to selected fields, use `fx.keyboard.scope=ANNOTATED` and add `@Keyboard` to those fields. In both scopes `@Keyboard(enabled = false)` opts a field out.
+
+### Customizing a field with `@Keyboard`
+
+```java
+@FxController
+public class PaymentController {
+
+    @FXML
+    @Keyboard(rows = {"1 2 3", "4 5 6", "7 8 9", "{clear} 0 {back}", "{enter=OK*2} {hide}"})
+    private PasswordField pin;
+
+    @FXML
+    @Keyboard(layout = "decimal", anchor = "formPane", maxWidth = 360)
+    private TextField amount;
+
+    @FXML
+    @Keyboard(layouts = {"qwerty", "myanmar"}, keyHeight = 60)
+    private TextField customerName;
+
+    @FXML
+    @Keyboard(enabled = false)
+    private TextField barcode;
+}
+```
+
+Use only one of `layout`, `rows` or `supplier` per field. Numeric attributes use `-1` for "not set", which keeps the global value. Only `TextInputControl` fields (`TextField`, `PasswordField`, `TextArea`) can be annotated. Wrong usage fails the startup with one message that lists every problem.
+
+### Inline rows syntax
+
+Each string in `rows` is one row. Keys are separated by spaces.
+
+| Token | Meaning |
+|-------|---------|
+| `a` | A character key. |
+| `a/A` | A key with a normal value and a shift value. |
+| `{shift}` `{back}` `{enter}` `{space}` `{tab}` `{clear}` `{hide}` | Special keys. |
+| `{next}` | Switches to the next layout in the cycle. |
+| `{layout:id}` | Switches to a specific layout. |
+| `=Label` | Renames a key, for example `{enter=OK}`. |
+| `*weight` | Widens a key, for example `{space*5}` is five key units wide. |
+
+Because keys are split on spaces, a space key must be written `{space}`.
+
+### Value order
+
+Values are applied in this order, and the most specific wins: properties, then a `KeyboardConfigurer`, then `@Keyboard` on the field. The layout of one field is chosen in this order: a layout assigned with `KeyboardLayouts.assign(node, id)`, the global `KeyboardLayoutResolver`, then the configured default.
+
+### Global settings in code
+
+```java
+@Component
+public class AppKeyboardConfigurer implements KeyboardConfigurer {
+
+    @Override
+    public void configure(KeyboardConfig config) {
+        config.register(MyanmarLayouts.letters())
+              .layouts(List.of("qwerty", "myanmar"))
+              .layoutFor(PasswordField.class, "numeric")
+              .keyHeight(60);
+    }
+}
+```
+
+Make the configurer a normal `@Component` so the core framework injects its fields. If several configurers exist, the order they run in is not defined. After they all ran, the global settings are validated, and an unknown layout id fails the startup.
+
+### Languages and layouts
+
+Add a language with a `KeyboardConfigurer` that calls `register(...)`, or with a `KeyboardLayoutProvider` listed in `META-INF/services/io.github.itech_framework.java_fx.ui.keyboard.KeyboardLayoutProvider`. Registering a layout with the same id as a built-in layout replaces it.
+
+When `fx.keyboard.layouts` (or `@Keyboard(layouts = ...)`) has two or more ids, the keyboard adds a language key next to the space bar on those layouts. Each tap goes to the next layout in the list and wraps around to the first. Layouts that already contain a `{next}` key are left unchanged. Layouts that are not in the list, such as `symbols` and the number pads, have no language key, so they need their own key to go back. Keep the default layout first in the list. The keyboard does not remember the language between fields. Each field starts from its own layout.
+
+### Width and position
+
+The keyboard has no fixed width. It follows an anchor, found in this order:
+
+1. A node assigned with `KeyboardAnchors.assign(...)` on the field or any of its parents.
+2. `@Keyboard(anchor = "id")` or `fx.keyboard.anchor-id`.
+3. The window.
+
+```java
+KeyboardAnchors.assign(formPane, formPane);
+KeyboardAnchors.assign(searchField, "searchBar");
+```
+
+The width is limited by `min-width`, `max-width`, the natural width of the layout and the screen. The keyboard goes under the anchor when there is room, otherwise inside it at the bottom. With no anchor it goes at the bottom of the window. If it would cover the focused field, it moves above the field. It follows window moves and resizes and anchor size changes.
+
+### Styling
+
+The bundled `keyboard.css` is loaded only when the keyboard is enabled. Load order on the keyboard is: the theme stylesheet (when `fx.keyboard.inherit-theme=true` and the theme is enabled), the bundled `keyboard.css`, then your `fx.keyboard.stylesheet`. Your rules win, so write only what you want to change.
+
+Colors come from theme variables on `.root`: `-fx-surface`, `-fx-control-bg`, `-fx-control-hover`, `-fx-control-pressed`, `-fx-border-base`, `-fx-text-color` and `-fx-primary`. The keyboard carries the style classes `fxvk` and `root`. The dark style class (`fx.theme.dark-style-class`) is copied from the focused scene every time the keyboard is shown. A layout can also have its own style class, for example `keyboard-myanmar`, so you can set a font per language.
+
+```css
+.keyboard-myanmar .key-text {
+    -fx-font-family: "Myanmar Text", "Noto Sans Myanmar", sans-serif;
+    -fx-font-size: 20px;
+}
+```
+
+If the theme does not define the variables above, define them yourself in your keyboard stylesheet.
+
+### Limitations
+
+- Only `TextInputControl` fields can be annotated. `Spinner` and editable `ComboBox` editors get the keyboard under scope `ALL`, but cannot be configured with `@Keyboard`.
+- The Tab key sends a synthetic key event. In a `TextArea` it may insert a tab instead of moving focus.
+- The keyboard does not follow a scrolling parent, and it does not scroll the field into view.
+- The keyboard stays open when another application window is activated.
+- Korean and other composing scripts are not combined by the keyboard. Each key inserts its own character.
 
 ## Multiple Implementations of One Interface
 
@@ -425,6 +587,7 @@ Use the same version for the core and every module, and rebuild your application
 **Compatible changes**
 - `FxThread.call(supplier, timeout, unit)`, `FxTheme.storedDarkMode()` and `FxComponent` with an empty default value.
 - The jar has the module name `io.github.itech_framework.java_fx`.
+- The virtual keyboard is new and off by default (`fx.keyboard.enabled=false`).
 
 ## Migrating from `@Rx`
 

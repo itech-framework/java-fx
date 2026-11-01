@@ -7,6 +7,7 @@ import java.net.URL;
 import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.core.processor.components_processor.ComponentProcessor;
 import io.github.itech_framework.core.store.ComponentStore;
+import io.github.itech_framework.java_fx.ui.keyboard.KeyboardBinder;
 import io.github.itech_framework.java_fx.utils.FxResources;
 import javafx.fxml.FXMLLoader;
 
@@ -39,6 +40,7 @@ public final class FxControllerLoader {
                     + " is not registered. Annotate it with @FxController and keep it inside the @ComponentScan package.");
         }
 
+        KeyboardBinder.bind(controller);
         ComponentProcessor.runInitMethods(controllerType, controller);
         return new Result<>(root, (C) controller);
     }

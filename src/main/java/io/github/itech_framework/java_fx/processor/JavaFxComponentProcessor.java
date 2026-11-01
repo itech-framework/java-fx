@@ -6,6 +6,7 @@ import io.github.itech_framework.core.processor.components_processor.ComponentPr
 import io.github.itech_framework.java_fx.annotations.FxController;
 import io.github.itech_framework.java_fx.config.FxSettings;
 import io.github.itech_framework.java_fx.router.Router;
+import io.github.itech_framework.java_fx.ui.keyboard.KeyboardBootstrap;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
 import io.github.itech_framework.java_fx.utils.notification.NotificationSource;
 
@@ -22,6 +23,7 @@ public class JavaFxComponentProcessor {
 	            validateFxControllers(context);
 	        }
 	        registerNotificationSources(context);
+	        KeyboardBootstrap.initialize(context);
 	    } catch (RuntimeException e) {
 	        context.close();
 	        throw e;

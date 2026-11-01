@@ -1,283 +1,534 @@
-/* modern-styles.css */
-
-/* Base variables - Light Theme (default) */
 .root {
-    /* Colors */
-    -fx-base: #ffffff;
-    -fx-background: #f5f5f5;
-    -fx-text-color: #212121;
-    -fx-border-base: #b3c6d6;
-    -fx-disabled: #6c757d;
+    -fx-base: #FFFFFF;
+    -fx-background: #F3F3F3;
+    -fx-text-color: #1B1B1B;
+    -fx-border-base: #D1D1D1;
+    -fx-disabled: #8A8A8A;
 
-    /* Color palette */
-    -fx-primary: #2196F3;
-    -fx-primary-dark: #1976D2;
-    -fx-secondary: #4CAF50;
-    -fx-secondary-dark: #388E3C;
-    -fx-success: #8BC34A;
-    -fx-danger: #FF5252;
-    -fx-danger-dark: #ff0000;
-    -fx-warning: #FFC107;
-    -fx-info: #00BCD4;
-    -fx-light: #f8f9fa;
-    -fx-dark: #212121;
+    -fx-surface: #FBFBFB;
+    -fx-input-bg: #FFFFFF;
+    -fx-control-bg: #FDFDFD;
+    -fx-control-hover: #F6F6F6;
+    -fx-control-pressed: #EDEDED;
+    -fx-control-disabled: #F5F5F5;
+    -fx-row-hover: #F5F5F5;
+    -fx-selection-bg: #CCE4F7;
+    -fx-selection-text: #1B1B1B;
+    -fx-grid-line: #EBEBEB;
+    -fx-on-primary: #FFFFFF;
 
-    /* Common styles */
-    /*-fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;*/
-    -fx-focus-color: transparent;
+    -fx-primary: #0067C0;
+    -fx-primary-dark: #005A9E;
+    -fx-secondary: #107C10;
+    -fx-secondary-dark: #0B5A0B;
+    -fx-success: #13A10E;
+    -fx-danger: #C42B1C;
+    -fx-danger-dark: #A52114;
+    -fx-warning: #FFB900;
+    -fx-info: #0078D4;
+    -fx-light: #F9F9F9;
+    -fx-dark: #1B1B1B;
+
+    -fx-accent: -fx-primary;
+    -fx-focus-color: -fx-primary;
     -fx-faint-focus-color: transparent;
+    -fx-font-family: "Segoe UI", "Helvetica", "Arial", sans-serif;
+    -fx-font-size: 12px;
 }
 
-/* Dark Theme Overrides */
 .root.dark-mode {
-    /* Deep Ocean Color Scheme */
-    -fx-base: #0F1B2D;          /* Deep navy base color */
-    -fx-background: #0A121F;     /* Dark ocean background */
-    -fx-text-color: #E0F2F1;
-    -fx-border-base: #1E3254;    /* Deep blue borders */
-    -fx-disabled: #546E7A;       /* Cool gray disabled state */
+    -fx-base: #202020;
+    -fx-background: #1C1C1C;
+    -fx-text-color: #FFFFFF;
+    -fx-border-base: #404040;
+    -fx-disabled: #737373;
 
-    /* Color palette */
-    -fx-primary: #1976D2;        /* Deep ocean blue */
-    -fx-primary-dark: #115293;    /* Darker navy */
-    -fx-secondary: #4DB6AC;      /* Aquatic teal */
-    -fx-secondary-dark: #00897B;  /* Deep teal */
-    -fx-success: #00BFA5;        /* Sea green */
-    -fx-danger: #EF5350;         /* Coral red */
-    -fx-danger-dark: #D32F2F;     /* Deep coral */
-    -fx-warning: #FFD740;        /* Golden sand */
-    -fx-info: #40C4FF;           /* Light wave blue */
-    -fx-light: #263238;          /* Dark surface color */
-    -fx-dark: #CFD8DC;           /* Light text for dark mode */
+    -fx-surface: #2B2B2B;
+    -fx-input-bg: #2D2D2D;
+    -fx-control-bg: #2D2D2D;
+    -fx-control-hover: #373737;
+    -fx-control-pressed: #2A2A2A;
+    -fx-control-disabled: #272727;
+    -fx-row-hover: #333333;
+    -fx-selection-bg: #2C4A63;
+    -fx-selection-text: #FFFFFF;
+    -fx-grid-line: #383838;
+    -fx-on-primary: #000000;
 
-    /* Additional oceanic accents */
-    -fx-accent: #26A69A;         /* Medium teal */
-    -fx-ripple-color: #1E325480; /* Deep blue ripple effect */
+    -fx-primary: #60CDFF;
+    -fx-primary-dark: #4AB5E6;
+    -fx-secondary: #6CCB5F;
+    -fx-secondary-dark: #57B04B;
+    -fx-success: #6CCB5F;
+    -fx-danger: #FF7A85;
+    -fx-danger-dark: #E5606B;
+    -fx-warning: #FCE100;
+    -fx-info: #60CDFF;
+    -fx-light: #2B2B2B;
+    -fx-dark: #E6E6E6;
+
+    -fx-accent: -fx-primary;
+    -fx-focus-color: -fx-primary;
 }
 
 .blur-effect {
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);
     -fx-background-color: -fx-background;
-    -fx-background-radius: 10;
+    -fx-background-radius: 8;
 }
 
-/* Base styles for all controls */
-.button, .text-field, .combo-box, .table-view, .menu-bar,.textarea {
-    -fx-background-color: -fx-base;
-    -fx-text-fill: -fx-text-color;
-}
-
-/* ================= BUTTON STYLES ================= */
 .button {
-    -fx-background-radius: 5px;
+    -fx-background-color: -fx-border-base, -fx-control-bg;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+    -fx-text-fill: -fx-text-color;
     -fx-padding: 4px 12px;
     -fx-font-size: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
-    -fx-cursor: hand;
-    -fx-transition: all 0.2s;
-    -fx-background-color: -fx-base;
-    -fx-text-fill: -fx-text-color;
+    -fx-effect: none;
+    -fx-cursor: default;
 }
 
-/* Primary Button */
+.button:hover {
+    -fx-background-color: -fx-border-base, -fx-control-hover;
+}
+
+.button:pressed {
+    -fx-background-color: -fx-border-base, -fx-control-pressed;
+}
+
+.button:focused {
+    -fx-background-color: -fx-primary, -fx-control-bg;
+}
+
+.button:default,
 .button.primary {
     -fx-background-color: -fx-primary;
-    -fx-text-fill: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-text-fill: -fx-on-primary;
 }
 
+.button:default:hover,
 .button.primary:hover {
     -fx-background-color: -fx-primary-dark;
 }
 
-/* Secondary Button */
+.button:default:pressed,
+.button.primary:pressed {
+    -fx-background-color: derive(-fx-primary-dark, -10%);
+}
+
+.button:default:focused,
+.button.primary:focused {
+    -fx-background-color: -fx-text-color, -fx-primary;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+}
+
 .button.secondary {
     -fx-background-color: -fx-secondary;
-    -fx-text-fill: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-text-fill: -fx-on-primary;
 }
 
 .button.secondary:hover {
     -fx-background-color: -fx-secondary-dark;
 }
 
-/* Danger Button */
+.button.secondary:pressed {
+    -fx-background-color: derive(-fx-secondary-dark, -10%);
+}
+
+.button.secondary:focused {
+    -fx-background-color: -fx-text-color, -fx-secondary;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+}
+
 .button.danger {
     -fx-background-color: -fx-danger;
-    -fx-text-fill: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-text-fill: -fx-on-primary;
 }
 
 .button.danger:hover {
     -fx-background-color: -fx-danger-dark;
 }
 
-/* Disabled State */
-.button:disabled {
-    -fx-background-color: -fx-disabled;
-    -fx-text-fill: derive(-fx-disabled, 40%);
+.button.danger:pressed {
+    -fx-background-color: derive(-fx-danger-dark, -10%);
+}
+
+.button.danger:focused {
+    -fx-background-color: -fx-text-color, -fx-danger;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+}
+
+.button:disabled,
+.button.primary:disabled,
+.button.secondary:disabled,
+.button.danger:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: -fx-control-disabled;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-text-fill: -fx-disabled;
     -fx-cursor: default;
 }
 
-.root.dark-mode .button:disabled {
-    -fx-text-fill: derive(-fx-disabled, -20%);
-}
-
-/* ================= TEXT FIELDS ================= */
-.text-field, .password-field, .textarea {
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
+.text-field,
+.password-field,
+.text-area {
+    -fx-control-inner-background: -fx-input-bg;
+    -fx-background-color: -fx-input-bg;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
     -fx-border-color: -fx-border-base;
     -fx-border-width: 1px;
     -fx-padding: 4px 8px;
-}
-
-.text-field:focused, .password-field:focused, .textarea:focused{
-    -fx-border-color: -fx-primary;
-    -fx-effect: dropshadow(gaussian, rgba(33,150,243,0.25), 10, 0, 0, 0);
-}
-
-/* ================= TABLES ================= */
-.table-view {
-    -fx-border-color: -fx-border-base;
-    -fx-border-radius: 5px;
-}
-
-.table-view .column-header {
-    -fx-background-color: -fx-light;
-}
-
-.table-row-cell, .table-cell {
     -fx-text-fill: -fx-text-color;
-    -fx-alignment: CENTER;
-    -fx-cell-size: 40px;
+    -fx-prompt-text-fill: -fx-disabled;
+    -fx-effect: none;
 }
 
-.table-row-cell:even {
-    -fx-background-color: -fx-base;
-}
-
-.table-row-cell:odd {
-    -fx-background-color: -fx-background;
-}
-
-.root.dark-mode .table-row-cell:even {
-    -fx-background-color: derive(-fx-base, 5%);
-}
-
-.root.dark-mode .table-row-cell:odd {
-    -fx-background-color: derive(-fx-base, -5%);
-}
-
-/* Selected row styling */
-.table-row-cell:selected {
-    -fx-text-fill: white;
-    -fx-background-color: derive(-fx-primary, -20%);
-    -fx-background-insets: 0;
-    -fx-table-cell-border-color: transparent;
-}
-
-.root.dark-mode .table-view .table-row-cell:selected {
-    -fx-text-fill: black;
-    -fx-background-color: derive(-fx-primary, 80%);
-    -fx-background-insets: 0;
-    -fx-table-cell-border-color: transparent;
-}
-
-.root.dark-mode .table-row-cell:selected .table-cell {
-    -fx-text-fill: black;
+.text-area .content {
     -fx-background-color: transparent;
 }
 
-.root.dark-mode .table-view .column-header {
-    -fx-background-color: derive(-fx-base, -10%);
+.text-field:focused,
+.password-field:focused,
+.text-area:focused {
+    -fx-border-color: -fx-border-base -fx-border-base -fx-primary -fx-border-base;
+    -fx-border-width: 1px 1px 2px 1px;
+    -fx-padding: 4px 8px 3px 8px;
+    -fx-effect: none;
 }
 
-/* ================= SCROLLBARS ================= */
-.scroll-bar .thumb {
-    -fx-background-color: derive(-fx-text-color, 50%);
+.text-field:disabled,
+.password-field:disabled,
+.text-area:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: -fx-control-disabled;
+    -fx-text-fill: -fx-disabled;
 }
 
-/* ================= MENUS ================= */
-.menu-bar {
+.table-view {
+    -fx-background-color: -fx-input-bg;
+    -fx-background-radius: 4;
     -fx-border-color: -fx-border-base;
+    -fx-border-radius: 4;
+    -fx-padding: 0;
+}
+
+.table-view .column-header-background,
+.table-view .filler,
+.table-view .corner {
+    -fx-background-color: -fx-surface;
+}
+
+.table-view .column-header {
+    -fx-background-color: -fx-surface;
+    -fx-size: 30px;
+    -fx-border-color: transparent -fx-border-base -fx-border-base transparent;
+    -fx-border-width: 0 1px 1px 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -fx-text-color;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-weight: normal;
+    -fx-padding: 0 4px;
+}
+
+.table-row-cell {
+    -fx-background-color: -fx-input-bg;
+    -fx-background-insets: 0;
+    -fx-cell-size: 28px;
+    -fx-table-cell-border-color: -fx-grid-line;
+    -fx-text-fill: -fx-text-color;
+}
+
+.table-row-cell:empty {
+    -fx-background-color: -fx-input-bg;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -fx-row-hover;
+}
+
+.table-cell {
+    -fx-text-fill: -fx-text-color;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 8px;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -fx-selection-bg;
+    -fx-background-insets: 0;
+    -fx-text-fill: -fx-selection-text;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-selection-text;
+}
+
+.table-view:focused .table-row-cell:selected {
+    -fx-background-color: -fx-primary;
+}
+
+.table-view:focused .table-row-cell:selected .table-cell {
+    -fx-text-fill: -fx-on-primary;
+}
+
+.list-view {
+    -fx-background-color: -fx-input-bg;
+    -fx-background-radius: 4;
+    -fx-border-color: -fx-border-base;
+    -fx-border-radius: 4;
+    -fx-padding: 0;
+}
+
+.list-cell {
+    -fx-background-color: -fx-input-bg;
+    -fx-text-fill: -fx-text-color;
+    -fx-padding: 4px 8px;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: -fx-row-hover;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: -fx-selection-bg;
+    -fx-text-fill: -fx-selection-text;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: derive(-fx-text-color, 60%);
+    -fx-background-radius: 4;
+    -fx-background-insets: 1;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: derive(-fx-text-color, 40%);
+}
+
+.menu-bar {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: transparent transparent -fx-border-base transparent;
     -fx-border-width: 0 0 1px 0;
 }
 
-.menu-item:hover {
-    -fx-background-color: derive(-fx-base, -20%);
+.menu-bar .label {
+    -fx-text-fill: -fx-text-color;
 }
 
-/* ================= TABS ================= */
+.menu-bar > .container > .menu-button:hover,
+.menu-bar > .container > .menu-button:showing {
+    -fx-background-color: -fx-control-hover;
+    -fx-background-radius: 4;
+}
+
+.context-menu {
+    -fx-background-color: -fx-border-base, -fx-surface;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-padding: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 6px 12px;
+    -fx-graphic-text-gap: 8px;
+}
+
+.menu-item .label {
+    -fx-text-fill: -fx-text-color;
+    -fx-padding: 0 10px 0 0;
+}
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: -fx-control-hover;
+}
+
+.menu-item:hover .label,
+.menu-item:focused .label {
+    -fx-text-fill: -fx-text-color;
+}
+
 .tab-pane {
     -fx-background-color: -fx-base;
 }
 
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+
 .tab {
-    -fx-background-color: derive(-fx-base, -10%);
+    -fx-background-color: transparent;
+    -fx-background-radius: 4 4 0 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.tab .tab-label {
+    -fx-text-fill: -fx-text-color;
+}
+
+.tab:hover {
+    -fx-background-color: -fx-control-hover;
 }
 
 .tab:selected {
-    -fx-background-color: -fx-base;
-    -fx-border-color: -fx-primary;
+    -fx-background-color: -fx-input-bg;
+    -fx-border-color: transparent transparent -fx-primary transparent;
+    -fx-border-width: 0 0 2px 0;
 }
 
-/* ================= CHECKBOXES ================= */
 .check-box .box {
-    -fx-border-color: -fx-border-base;
+    -fx-background-color: -fx-border-base, -fx-input-bg;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+    -fx-padding: 3px;
+}
+
+.check-box:hover .box {
+    -fx-background-color: -fx-primary, -fx-input-bg;
+}
+
+.check-box:selected .box {
+    -fx-background-color: -fx-primary, -fx-primary;
 }
 
 .check-box:selected .mark {
+    -fx-background-color: -fx-on-primary;
+}
+
+.radio-button .radio {
+    -fx-background-color: -fx-border-base, -fx-input-bg;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 1em, 1em;
+}
+
+.radio-button:hover .radio {
+    -fx-background-color: -fx-primary, -fx-input-bg;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: -fx-primary, -fx-input-bg;
+}
+
+.radio-button:selected .dot {
     -fx-background-color: -fx-primary;
 }
 
-/* ================= SLIDERS ================= */
 .slider .track {
-    -fx-background-color: derive(-fx-base, -20%);
+    -fx-background-color: -fx-border-base;
+    -fx-background-radius: 2;
 }
 
 .slider .thumb {
     -fx-background-color: -fx-primary;
+    -fx-background-radius: 1em;
+    -fx-background-insets: 0;
+    -fx-padding: 7px;
 }
 
-/* ================= PROGRESS BARS ================= */
-.progress-bar .bar {
+.progress-bar > .track {
+    -fx-background-color: -fx-border-base;
+    -fx-background-radius: 2;
+    -fx-background-insets: 0;
+}
+
+.progress-bar > .bar {
     -fx-background-color: -fx-primary;
+    -fx-background-radius: 2;
+    -fx-background-insets: 0;
+    -fx-padding: 3px;
 }
 
-/* ================= COMBO BOXES ================= */
 .combo-box {
-    -fx-border-color: -fx-border-base;
+    -fx-background-color: -fx-border-base, -fx-control-bg;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+    -fx-text-fill: -fx-text-color;
 }
 
-/* ================= DIALOG PANES ================= */
+.combo-box:hover {
+    -fx-background-color: -fx-border-base, -fx-control-hover;
+}
+
+.combo-box:focused {
+    -fx-background-color: -fx-primary, -fx-control-bg;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-text-color;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 4;
+    -fx-border-color: -fx-border-base;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: -fx-surface;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: -fx-control-hover;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: -fx-selection-bg;
+    -fx-text-fill: -fx-selection-text;
+}
+
 .dialog-pane {
     -fx-background-color: -fx-background;
     -fx-border-color: -fx-border-base;
 }
 
-/* ================= TOOLTIPS ================= */
+.dialog-pane > .button-bar > .container {
+    -fx-background-color: -fx-surface;
+}
+
 .tooltip {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 4;
     -fx-text-fill: -fx-text-color;
     -fx-border-color: -fx-border-base;
+    -fx-border-radius: 4;
+    -fx-padding: 4px 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 2);
 }
 
-/* ================= DARK MODE ADJUSTMENTS ================= */
-.root.dark-mode .table-row-cell:even {
-    -fx-background-color: derive(-fx-base, 5%);
-}
-
-.root.dark-mode .table-row-cell:odd {
-    -fx-background-color: derive(-fx-base, -5%);
-}
-
-.root.dark-mode .scroll-bar .thumb {
-    -fx-background-color: derive(-fx-text-color, -30%);
-}
-
-.root.dark-mode .menu-item:hover {
-    -fx-background-color: derive(-fx-primary, -80%);
-}
-
-/* ================= UTILITY CLASSES ================= */
 .success-text {
     -fx-text-fill: -fx-success;
 }
@@ -295,59 +546,26 @@
 }
 
 .error-field {
-    -fx-border-color: #ff4444;
+    -fx-border-color: -fx-danger;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-focus-color: -fx-danger;
+}
+
+.error-field:focused {
+    -fx-border-color: -fx-danger -fx-danger -fx-danger -fx-danger;
     -fx-border-width: 2px;
-    -fx-border-radius: 3px;
-    -fx-focus-color: #ff4444;
 }
 
-.error-field .tooltip {
-    -fx-background-color: #ff4444;
-    -fx-text-fill: white;
-}
-
-/* Context menu styling */
-.context-menu {
-    -fx-background-color: -fx-base;
-    -fx-border-color: -fx-border-base;
-    -fx-border-width: 1px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 0);
-}
-
-.menu-item {
-    -fx-text-fill: -fx-text-color;
-    -fx-padding: 8px 16px;
-    -fx-graphic-text-gap: 8px;
-}
-
-.menu-item .label {
-    -fx-padding: 0px 10px;
-}
-
-.menu-item:hover {
-    -fx-background-color: derive(-fx-primary, 80%);
-}
-
-/* Dark mode adjustments */
-.root.dark-mode .context-menu {
-    -fx-background-color: -fx-base;
-    -fx-border-color: -fx-border-base;
-}
-
-.root.dark-mode .menu-item:hover {
-    -fx-background-color: derive(-fx-primary, -20%);
-}
-/* Add to your existing CSS file */
 .alert-container {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: -fx-border-base;
     -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
     -fx-background-insets: 0;
     -fx-border-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 12, 0, 0, 3);
 }
 
 .alert-title {
@@ -367,21 +585,36 @@
 
 .alert-default-button {
     -fx-background-color: -fx-primary;
-    -fx-text-fill: white;
+    -fx-text-fill: -fx-on-primary;
     -fx-padding: 4px 12px;
     -fx-font-size: 12px;
     -fx-background-radius: 4px;
+    -fx-cursor: default;
 }
 
 .alert-default-button:hover {
-    -fx-background-color: derive(-fx-primary, -10%);
+    -fx-background-color: -fx-primary-dark;
 }
 
-/* Level-specific styles using theme variables */
-.alert-error .alert-icon { -fx-fill: -fx-danger; }
-.alert-warning .alert-icon { -fx-fill: -fx-warning; }
-.alert-info .alert-icon { -fx-fill: -fx-info; }
-.alert-success .alert-icon { -fx-fill: -fx-success; }
+.alert-default-button:pressed {
+    -fx-background-color: derive(-fx-primary-dark, -10%);
+}
+
+.alert-error .alert-icon {
+    -fx-fill: -fx-danger;
+}
+
+.alert-warning .alert-icon {
+    -fx-fill: -fx-warning;
+}
+
+.alert-info .alert-icon {
+    -fx-fill: -fx-info;
+}
+
+.alert-success .alert-icon {
+    -fx-fill: -fx-success;
+}
 
 .dialog-close-button {
     -fx-background-color: transparent;
@@ -391,22 +624,24 @@
     -fx-background-radius: 4px;
     -fx-padding: 4px 12px;
     -fx-font-size: 12px;
+    -fx-cursor: default;
 }
 
 .dialog-close-button:hover {
-    -fx-background-color: derive(-fx-border-base, 80%);
+    -fx-background-color: -fx-control-hover;
 }
 
-.root.dark-mode .dialog-close-button:hover {
-    -fx-background-color: derive(-fx-border-base, -20%);
+.dialog-close-button:pressed {
+    -fx-background-color: -fx-control-pressed;
 }
 
 .loading-container {
-    -fx-background-color: -fx-base;
-    -fx-background-radius: 12px;
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 8px;
     -fx-border-color: -fx-border-base;
-    -fx-border-radius: 12px;
+    -fx-border-radius: 8px;
     -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 12, 0, 0, 3);
 }
 
 .loading-message {
@@ -424,32 +659,18 @@
     -fx-text-fill: derive(-fx-text-color, 30%);
 }
 
-/* Dark mode specific adjustments */
-.root.dark-mode .alert-container {
-    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.05), 10, 0, 0, 0);
-}
-
-.root.dark-mode .alert-default-button {
-    -fx-text-fill: -fx-light;
-}
-
-.root.dark-mode .alert-default-button:hover {
-    -fx-background-color: derive(-fx-primary, 10%);
-}
-
-
-/* Toast Styles - Using Root Color Variables */
 .toast-root {
     -fx-background-color: transparent;
     -fx-padding: 8px;
 }
 
 .toast-container {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
     -fx-border-color: -fx-border-base;
     -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 0, 2);
 }
 
 .toast-body {
@@ -479,22 +700,23 @@
 
 .toast-close-button {
     -fx-background-color: transparent;
-    -fx-background-radius: 10px;
+    -fx-background-radius: 4px;
     -fx-min-width: 20px;
     -fx-min-height: 20px;
     -fx-pref-width: 20px;
     -fx-pref-height: 20px;
     -fx-max-width: 20px;
     -fx-max-height: 20px;
-    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-cursor: default;
 }
 
 .toast-close-button:hover {
-    -fx-background-color: derive(-fx-border-base, 80%);
+    -fx-background-color: -fx-control-hover;
 }
 
 .toast-close-button:pressed {
-    -fx-background-color: derive(-fx-border-base, 70%);
+    -fx-background-color: -fx-control-pressed;
 }
 
 .toast-close-icon {
@@ -508,28 +730,36 @@
     -fx-stroke: -fx-text-color;
 }
 
-/* Toast type backgrounds using root color palette */
 .toast-info {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-info, 90%), derive(-fx-info, 85%));
+    -fx-background-color: derive(-fx-info, 90%);
     -fx-border-color: derive(-fx-info, 30%);
 }
 
 .toast-success {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-success, 90%), derive(-fx-success, 85%));
+    -fx-background-color: derive(-fx-success, 90%);
     -fx-border-color: derive(-fx-success, 30%);
 }
 
 .toast-warning {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-warning, 90%), derive(-fx-warning, 85%));
+    -fx-background-color: derive(-fx-warning, 90%);
     -fx-border-color: derive(-fx-warning, 30%);
 }
 
 .toast-error {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-danger, 90%), derive(-fx-danger, 85%));
+    -fx-background-color: derive(-fx-danger, 90%);
     -fx-border-color: derive(-fx-danger, 30%);
 }
 
-/* Toast type specific text colors */
+.toast-primary {
+    -fx-background-color: derive(-fx-primary, 90%);
+    -fx-border-color: derive(-fx-primary, 30%);
+}
+
+.toast-secondary {
+    -fx-background-color: derive(-fx-secondary, 90%);
+    -fx-border-color: derive(-fx-secondary, 30%);
+}
+
 .toast-info .toast-title,
 .toast-info .toast-message,
 .toast-success .toast-title,
@@ -537,202 +767,60 @@
 .toast-warning .toast-title,
 .toast-warning .toast-message,
 .toast-error .toast-title,
-.toast-error .toast-message {
+.toast-error .toast-message,
+.toast-primary .toast-title,
+.toast-primary .toast-message,
+.toast-secondary .toast-title,
+.toast-secondary .toast-message {
     -fx-text-fill: derive(-fx-dark, -40%);
 }
 
-/* Primary and Secondary toast types (using your primary/secondary colors) */
-.toast-primary {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-primary, 90%), derive(-fx-primary, 85%));
-    -fx-border-color: derive(-fx-primary, 30%);
-}
-
-.toast-secondary {
-    -fx-background-color: linear-gradient(to bottom, derive(-fx-secondary, 90%), derive(-fx-secondary, 85%));
-    -fx-border-color: derive(-fx-secondary, 30%);
-}
-
-/* Dark mode adjustments */
-
-.root.dark-mode .toast-container {
-    -fx-background-color: -fx-base;
-    -fx-border-color: -fx-border-base;
-}
-
-.root.dark-mode .toast-title {
-    -fx-text-fill: -fx-text-color;
-}
-
-.root.dark-mode .toast-message {
-    -fx-text-fill: -fx-text-color;
-}
-
-.root.dark-mode .toast-close-button {
-    -fx-text-fill: -fx-disabled;
-}
-
-.root.dark-mode .toast-close-button:hover {
-    -fx-background-color: derive(-fx-border-base, -20%);
-}
-
-/* Dark mode toast type backgrounds */
-.root.dark-mode .toast-info {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(0, 188, 212, 0.15), 
-        rgba(0, 188, 212, 0.1));
-    -fx-border-color: rgba(0, 188, 212, 0.3);
-}
-
-.root.dark-mode .toast-success {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(139, 195, 74, 0.15), 
-        rgba(139, 195, 74, 0.1));
-    -fx-border-color: rgba(139, 195, 74, 0.3);
-}
-
-.root.dark-mode .toast-warning {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(255, 193, 7, 0.15), 
-        rgba(255, 193, 7, 0.1));
-    -fx-border-color: rgba(255, 193, 7, 0.3);
-}
-
-.root.dark-mode .toast-error {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(255, 82, 82, 0.15), 
-        rgba(255, 82, 82, 0.1));
-    -fx-border-color: rgba(255, 82, 82, 0.3);
-}
-
-.root.dark-mode .toast-primary {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(33, 150, 243, 0.15), 
-        rgba(33, 150, 243, 0.1));
-    -fx-border-color: rgba(33, 150, 243, 0.3);
-}
-
-.root.dark-mode .toast-secondary {
-    -fx-background-color: linear-gradient(to bottom, 
-        rgba(76, 175, 80, 0.15), 
-        rgba(76, 175, 80, 0.1));
-    -fx-border-color: rgba(76, 175, 80, 0.3);
-}
-
-/* Dark mode - text colors for toast types */
-.root.dark-mode .toast-info .toast-title,
-.root.dark-mode .toast-info .toast-message {
-    -fx-text-fill: -fx-info;
-}
-
-.root.dark-mode .toast-success .toast-title,
-.root.dark-mode .toast-success .toast-message {
-    -fx-text-fill: -fx-success;
-}
-
-.root.dark-mode .toast-warning .toast-title,
-.root.dark-mode .toast-warning .toast-message {
-    -fx-text-fill: -fx-warning;
-}
-
-.root.dark-mode .toast-error .toast-title,
-.root.dark-mode .toast-error .toast-message {
-    -fx-text-fill: -fx-danger;
-}
-
-.root.dark-mode .toast-primary .toast-title,
-.root.dark-mode .toast-primary .toast-message {
-    -fx-text-fill: -fx-primary;
-}
-
-.root.dark-mode .toast-secondary .toast-title,
-.root.dark-mode .toast-secondary .toast-message {
-    -fx-text-fill: -fx-secondary;
-}
-
-/* Outline variant: use customStyleClass("toast-outline") */
 .toast-container.toast-outline.toast-info {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: -fx-info;
     -fx-border-width: 1.5px;
 }
 
 .toast-container.toast-outline.toast-success {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: -fx-success;
     -fx-border-width: 1.5px;
 }
 
 .toast-container.toast-outline.toast-warning {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: -fx-warning;
     -fx-border-width: 1.5px;
 }
 
 .toast-container.toast-outline.toast-error {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: -fx-danger;
     -fx-border-width: 1.5px;
 }
 
-/* Accent bar variant: use customStyleClass("toast-accent") */
 .toast-container.toast-accent.toast-info {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: transparent transparent transparent -fx-info;
     -fx-border-width: 0 0 0 5px;
 }
 
 .toast-container.toast-accent.toast-success {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: transparent transparent transparent -fx-success;
     -fx-border-width: 0 0 0 5px;
 }
 
 .toast-container.toast-accent.toast-warning {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: transparent transparent transparent -fx-warning;
     -fx-border-width: 0 0 0 5px;
 }
 
 .toast-container.toast-accent.toast-error {
-    -fx-background-color: -fx-base;
+    -fx-background-color: -fx-surface;
     -fx-border-color: transparent transparent transparent -fx-danger;
     -fx-border-width: 0 0 0 5px;
-}
-
-/* Animation effects for toast */
-@keyframes toastFadeIn {
-    from {
-        -fx-opacity: 0;
-        -fx-translate-y: 20;
-    }
-    to {
-        -fx-opacity: 1;
-        -fx-translate-y: 0;
-    }
-}
-
-@keyframes toastFadeOut {
-    from {
-        -fx-opacity: 1;
-        -fx-translate-y: 0;
-    }
-    to {
-        -fx-opacity: 0;
-        -fx-translate-y: -20;
-    }
-}
-
-.toast-animate-in {
-    -fx-animation: toastFadeIn 300ms ease-out;
-}
-
-.toast-animate-out {
-    -fx-animation: toastFadeOut 200ms ease-in;
-}
-
-/* Stacking toast notifications */
-.toast-stacked {
-    -fx-margin-bottom: 10px;
 }
 
 .toast-progress-bar {
@@ -743,11 +831,10 @@
 }
 
 .toast-progress-bar > .track {
-    -fx-background-color: derive(-fx-border-base, 30%);
+    -fx-background-color: -fx-border-base;
     -fx-background-radius: 4px;
     -fx-background-insets: 0;
 }
-
 
 .toast-progress-bar > .bar {
     -fx-background-color: -fx-accent;
@@ -756,11 +843,6 @@
     -fx-padding: 4px;
 }
 
-.root.dark-mode .toast-progress-bar > .track {
-    -fx-background-color: derive(-fx-border-base, -20%);
-}
-
-/* Compact toast variant: use customStyleClass("toast-compact") */
 .toast-compact {
     -fx-min-width: 250px;
     -fx-pref-width: 250px;
@@ -779,7 +861,6 @@
     -fx-font-size: 12px;
 }
 
-/* Large toast variant: use customStyleClass("toast-large") */
 .toast-large {
     -fx-min-width: 450px;
     -fx-pref-width: 450px;
@@ -798,7 +879,6 @@
     -fx-font-size: 14px;
 }
 
-/* Toast positioning classes */
 .toast-top-left {
     -fx-alignment: top-left;
 }
@@ -835,52 +915,133 @@
     -fx-alignment: bottom-right;
 }
 
-/* Toast with action button */
 .toast-action-button {
     -fx-background-color: transparent;
     -fx-text-fill: -fx-primary;
     -fx-border-color: -fx-primary;
     -fx-border-width: 1px;
     -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
     -fx-padding: 4px 12px;
-    -fx-cursor: hand;
+    -fx-cursor: default;
 }
 
 .toast-action-button:hover {
     -fx-background-color: derive(-fx-primary, 90%);
 }
 
-.root.dark-mode .toast-action-button {
-    -fx-text-fill: -fx-primary;
-    -fx-border-color: -fx-primary;
-}
-
-.root.dark-mode .toast-action-button:hover {
-    -fx-background-color: rgba(33, 150, 243, 0.1);
-}
-
-/* Toast with countdown timer */
 .toast-timer {
     -fx-fill: -fx-primary;
     -fx-stroke: -fx-primary;
 }
 
-.root.dark-mode .toast-timer {
-    -fx-fill: -fx-primary;
-    -fx-stroke: -fx-primary;
+.toast-container:focused {
+    -fx-border-color: -fx-primary;
+    -fx-border-width: 2px;
 }
 
 .root.dialog-root {
     -fx-background-color: transparent;
 }
 
-/* Accessibility improvements */
-.toast-container:focus-visible {
-    -fx-border-color: -fx-primary;
-    -fx-border-width: 2px;
+.root.dark-mode .button:disabled,
+.root.dark-mode .button.primary:disabled,
+.root.dark-mode .button.secondary:disabled,
+.root.dark-mode .button.danger:disabled {
+    -fx-text-fill: -fx-disabled;
 }
 
-/* High contrast mode support */
+.root.dark-mode .scroll-bar .thumb {
+    -fx-background-color: derive(-fx-text-color, -40%);
+}
+
+.root.dark-mode .scroll-bar .thumb:hover {
+    -fx-background-color: derive(-fx-text-color, -25%);
+}
+
+.root.dark-mode .table-row-cell:selected,
+.root.dark-mode .table-row-cell:selected .table-cell {
+    -fx-text-fill: -fx-selection-text;
+}
+
+.root.dark-mode .table-view:focused .table-row-cell:selected .table-cell {
+    -fx-text-fill: -fx-on-primary;
+}
+
+.root.dark-mode .alert-container,
+.root.dark-mode .toast-container,
+.root.dark-mode .loading-container {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 12, 0, 0, 3);
+}
+
+.root.dark-mode .alert-default-button {
+    -fx-text-fill: -fx-on-primary;
+}
+
+.root.dark-mode .toast-info {
+    -fx-background-color: rgba(96, 205, 255, 0.15);
+    -fx-border-color: rgba(96, 205, 255, 0.3);
+}
+
+.root.dark-mode .toast-success {
+    -fx-background-color: rgba(108, 203, 95, 0.15);
+    -fx-border-color: rgba(108, 203, 95, 0.3);
+}
+
+.root.dark-mode .toast-warning {
+    -fx-background-color: rgba(252, 225, 0, 0.15);
+    -fx-border-color: rgba(252, 225, 0, 0.3);
+}
+
+.root.dark-mode .toast-error {
+    -fx-background-color: rgba(255, 122, 133, 0.15);
+    -fx-border-color: rgba(255, 122, 133, 0.3);
+}
+
+.root.dark-mode .toast-primary {
+    -fx-background-color: rgba(96, 205, 255, 0.15);
+    -fx-border-color: rgba(96, 205, 255, 0.3);
+}
+
+.root.dark-mode .toast-secondary {
+    -fx-background-color: rgba(108, 203, 95, 0.15);
+    -fx-border-color: rgba(108, 203, 95, 0.3);
+}
+
+.root.dark-mode .toast-info .toast-title,
+.root.dark-mode .toast-info .toast-message {
+    -fx-text-fill: -fx-info;
+}
+
+.root.dark-mode .toast-success .toast-title,
+.root.dark-mode .toast-success .toast-message {
+    -fx-text-fill: -fx-success;
+}
+
+.root.dark-mode .toast-warning .toast-title,
+.root.dark-mode .toast-warning .toast-message {
+    -fx-text-fill: -fx-warning;
+}
+
+.root.dark-mode .toast-error .toast-title,
+.root.dark-mode .toast-error .toast-message {
+    -fx-text-fill: -fx-danger;
+}
+
+.root.dark-mode .toast-primary .toast-title,
+.root.dark-mode .toast-primary .toast-message {
+    -fx-text-fill: -fx-primary;
+}
+
+.root.dark-mode .toast-secondary .toast-title,
+.root.dark-mode .toast-secondary .toast-message {
+    -fx-text-fill: -fx-secondary;
+}
+
+.root.dark-mode .toast-action-button:hover {
+    -fx-background-color: rgba(96, 205, 255, 0.1);
+}
+
 .high-contrast .toast-container {
     -fx-border-width: 2px;
     -fx-border-color: -fx-text-color;

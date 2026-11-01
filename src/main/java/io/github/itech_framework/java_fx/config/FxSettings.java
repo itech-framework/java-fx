@@ -9,281 +9,346 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.core.utils.PropertiesLoader;
 import io.github.itech_framework.java_fx.router.config.DisposePolicy;
+import io.github.itech_framework.java_fx.ui.keyboard.KeyboardScope;
 import io.github.itech_framework.java_fx.ui.toast.ToastPosition;
 import javafx.scene.paint.Color;
 
 public final class FxSettings {
 
-    public enum PreloaderTheme { AUTO, LIGHT, DARK }
+	public enum PreloaderTheme {
+		AUTO, LIGHT, DARK
+	}
 
-    public record App(String name, boolean exitOnStop, boolean controllersRequired, boolean smoothFont) {}
+	public record App(String name, boolean exitOnStop, boolean controllersRequired, boolean smoothFont) {
+	}
 
-    public record Theme(boolean enabled, String stylesheet, String darkModeKey, String darkStyleClass,
-                        Color lightFill, Color darkFill) {}
+	public record Theme(boolean enabled, String stylesheet, String darkModeKey, String darkStyleClass, Color lightFill,
+			Color darkFill) {
+	}
 
-    public record Preloader(boolean enabled, String stylesheet, PreloaderTheme theme, boolean decorated,
-                            double width, double height, double barWidth, double barHeight, double titleFontSize,
-                            String startingMessage, String initializingMessage, String injectingMessage,
-                            String preparingMessage, String registeringMessage, String finalizingMessage,
-                            String failedMessage, long delay) {}
+	public record Preloader(boolean enabled, String stylesheet, PreloaderTheme theme, boolean decorated, double width,
+			double height, double barWidth, double barHeight, double titleFontSize, String startingMessage,
+			String initializingMessage, String injectingMessage, String preparingMessage, String registeringMessage,
+			String finalizingMessage, String failedMessage, long delay) {
+	}
 
-    public record Router(boolean validateOnInit, boolean runOnFxThread, DisposePolicy disposePolicy,
-                         String contentContainerId, int maxRedirects) {}
+	public record Router(boolean validateOnInit, boolean runOnFxThread, DisposePolicy disposePolicy,
+			String contentContainerId, int maxRedirects) {
+	}
 
-    public record Components(String fxmlBase) {}
+	public record Components(String fxmlBase) {
+	}
 
-    public record Background(int threads, int scheduledThreads, boolean daemon, long shutdownWaitMillis) {}
+	public record Background(int threads, int scheduledThreads, boolean daemon, long shutdownWaitMillis) {
+	}
 
-    public record Toast(ToastPosition position, long durationMillis, double offsetX, double offsetY,
-                        double maxWidth, double maxHeight) {}
-    
-    public record Scroll(boolean smooth, double speed, double responseMillis, boolean contentCaching) {}
+	public record Toast(ToastPosition position, long durationMillis, double offsetX, double offsetY, double maxWidth,
+			double maxHeight) {
+	}
 
-    public record Notification(boolean enabled, boolean tray, String trayIcon, String trayTooltip,
-            long pollSeconds, int maxPerCycle, long keepHours) {}
-    
-    private static final Map<String, String> OVERRIDES = new ConcurrentHashMap<>();
-    private static volatile FxSettings current;
+	public record Scroll(boolean smooth, double speed, double responseMillis, boolean contentCaching) {
+	}
 
-    private final App app;
-    private final Theme theme;
-    private final Preloader preloader;
-    private final Router router;
-    private final Components components;
-    private final Background background;
-    private final Toast toast;
-    
-    private final Scroll scroll;
+	public record Notification(boolean enabled, boolean tray, String trayIcon, String trayTooltip, long pollSeconds,
+			int maxPerCycle, long keepHours) {
+	}
 
-    private final Notification notification;
+	public record Keyboard(boolean enabled, String stylesheet, String styleClass, boolean inheritTheme,
+            String layout, List<String> layouts, String anchorId, double minWidth, double maxWidth,
+            double keyHeight, double keyGap, double maxKeyWidth, KeyboardScope scope) {}
 
-    private FxSettings(App app, Theme theme, Preloader preloader, Router router, Components components,
-                       Background background, Toast toast, Scroll scroll, Notification notification) {
-        this.app = app;
-        this.theme = theme;
-        this.preloader = preloader;
-        this.router = router;
-        this.components = components;
-        this.background = background;
-        this.toast = toast;
-        this.scroll = scroll;
-        this.notification = notification;
-    }
+	private static final Map<String, String> OVERRIDES = new ConcurrentHashMap<>();
+	private static volatile FxSettings current;
 
-    public Notification notification() { return notification; }
+	private final App app;
+	private final Theme theme;
+	private final Preloader preloader;
+	private final Router router;
+	private final Components components;
+	private final Background background;
+	private final Toast toast;
 
-    public Scroll scroll() { return scroll; }
+	private final Scroll scroll;
 
-    public App app() { return app; }
-    public Theme theme() { return theme; }
-    public Preloader preloader() { return preloader; }
-    public Router router() { return router; }
-    public Components components() { return components; }
-    public Background background() { return background; }
-    public Toast toast() { return toast; }
+	private final Notification notification;
 
-    public static FxSettings get() {
-        FxSettings snapshot = current;
-        if (snapshot == null) {
-            synchronized (FxSettings.class) {
-                snapshot = current;
-                if (snapshot == null) {
-                    snapshot = load();
-                    current = snapshot;
-                }
-            }
-        }
-        return snapshot;
-    }
+	private final Keyboard keyboard;
 
-    public static synchronized FxSettings reload() {
-        current = load();
-        return current;
-    }
+	private FxSettings(App app, Theme theme, Preloader preloader, Router router, Components components,
+			Background background, Toast toast, Scroll scroll, Notification notification, Keyboard keyboard) {
+		this.app = app;
+		this.theme = theme;
+		this.preloader = preloader;
+		this.router = router;
+		this.components = components;
+		this.background = background;
+		this.toast = toast;
+		this.scroll = scroll;
+		this.notification = notification;
+		this.keyboard = keyboard;
+	}
 
-    public static synchronized void override(String key, Object value) {
-        if (key == null || key.isBlank()) {
-            throw new IllegalArgumentException("Setting key must not be blank");
-        }
-        OVERRIDES.put(key, String.valueOf(value));
-        current = null;
-    }
+	public Keyboard keyboard() {
+		return keyboard;
+	}
 
-    public static synchronized void reset() {
-        OVERRIDES.clear();
-        current = null;
-    }
+	public Notification notification() {
+		return notification;
+	}
 
-    private static FxSettings load() {
-        Reader in = new Reader();
+	public Scroll scroll() {
+		return scroll;
+	}
 
-        App app = new App(
-                in.string("app.name", "Application"),
-                in.bool("fx.app.exit-on-stop", true),
-                in.bool("fx.controllers.required", true),
-                in.bool("fx.app.font.smooth", true));
+	public App app() {
+		return app;
+	}
 
-        Theme theme = new Theme(
-                in.bool("fx.theme.enabled", true),
-                in.string("fx.theme.stylesheet", "/static/css/style.css"),
-                in.string("fx.theme.dark-mode-key", "isDarkMode"),
-                in.string("fx.theme.dark-style-class", "dark-mode"),
-                in.color("fx.theme.light-fill", "#FFFFFF"),
-                in.color("fx.theme.dark-fill", "#000000"));
+	public Theme theme() {
+		return theme;
+	}
 
-        Preloader preloader = new Preloader(
-                in.bool("fx.preloader.enabled", true),
-                in.string("fx.preloader.stylesheet", ""),
-                in.enumeration("fx.preloader.theme", PreloaderTheme.AUTO, PreloaderTheme.class),
-                in.bool("fx.preloader.decorated", false),
-                in.number("fx.preloader.width", 400, 100, 4000),
-                in.number("fx.preloader.height", 200, 100, 4000),
-                in.number("fx.preloader.bar-width", 300, 50, 4000),
-                in.number("fx.preloader.bar-height", 15, 2, 200),
-                in.number("fx.preloader.title-font-size", 18, 6, 96),
-                in.string("fx.preloader.message.starting", "Starting..."),
-                in.string("fx.preloader.message.initializing", "Initializing application..."),
-                in.string("fx.preloader.message.injecting", "Injecting data..."),
-                in.string("fx.preloader.message.preparing", "Preparing components..."),
-                in.string("fx.preloader.message.registering", "Registering services..."),
-                in.string("fx.preloader.message.finalizing", "Finalizing..."),
-                in.string("fx.preloader.message.failed", "Startup failed"),
-                in.number("fx.preloader.delay", 0, 0, 100000));
+	public Preloader preloader() {
+		return preloader;
+	}
 
-        Router router = new Router(
-                in.bool("fx.router.validate-on-init", true),
-                in.bool("fx.router.run-on-fx-thread", true),
-                in.enumeration("fx.router.dispose-policy", DisposePolicy.ON_LEAVE, DisposePolicy.class),
-                in.string("fx.router.content-container-id", "contentContainer"),
-                (int) in.number("fx.router.max-redirects", 10, 1, 100));
+	public Router router() {
+		return router;
+	}
 
-        Components components = new Components(in.directory("fx.components.fxml-base", "/views/"));
+	public Components components() {
+		return components;
+	}
 
-        Background background = new Background(
-                (int) in.number("fx.background.threads", 4, 1, 64),
-                (int) in.number("fx.background.scheduled-threads", 2, 1, 64),
-                in.bool("fx.background.daemon", true),
-                (long) in.number("fx.background.shutdown-wait-ms", 1000, 0, 60000));
+	public Background background() {
+		return background;
+	}
 
-        Toast toast = new Toast(
-                in.enumeration("fx.toast.position", ToastPosition.BOTTOM_RIGHT, ToastPosition.class),
-                (long) in.number("fx.toast.duration-ms", 3000, 100, 600000),
-                in.number("fx.toast.offset-x", 20, 0, 2000),
-                in.number("fx.toast.offset-y", 20, 0, 2000),
-                in.number("fx.toast.max-width", 350, 50, 4000),
-                in.number("fx.toast.max-height", 200, 30, 4000));
+	public Toast toast() {
+		return toast;
+	}
 
-        Scroll scroll = new Scroll(
-                in.bool("fx.scroll.smooth", true),
-                in.number("fx.scroll.speed", 2.0, 0.1, 20),
-                in.number("fx.scroll.response-ms", 80, 10, 1000),
-                in.bool("fx.scroll.content-caching", true));
+	public static FxSettings get() {
+		FxSettings snapshot = current;
+		if (snapshot == null) {
+			synchronized (FxSettings.class) {
+				snapshot = current;
+				if (snapshot == null) {
+					snapshot = load();
+					current = snapshot;
+				}
+			}
+		}
+		return snapshot;
+	}
 
-        Notification notification = new Notification(
-                in.bool("fx.notification.enabled", true),
-                in.bool("fx.notification.tray", true),
-                in.string("fx.notification.tray-icon", ""),
-                in.string("fx.notification.tray-tooltip", app.name()),
-                (long) in.number("fx.notification.poll-seconds", 60, 5, 3600),
-                (int) in.number("fx.notification.max-per-cycle", 3, 1, 20),
-                (long) in.number("fx.notification.keep-hours", 48, 1, 720));
+	public static synchronized FxSettings reload() {
+		current = load();
+		return current;
+	}
 
-        in.failOnErrors();
-        return new FxSettings(app, theme, preloader, router, components, background, toast, scroll, notification);
-    }
+	public static synchronized void override(String key, Object value) {
+		if (key == null || key.isBlank()) {
+			throw new IllegalArgumentException("Setting key must not be blank");
+		}
+		OVERRIDES.put(key, String.valueOf(value));
+		current = null;
+	}
 
-    private static final class Reader {
-        private final List<String> errors = new ArrayList<>();
+	public static synchronized void reset() {
+		OVERRIDES.clear();
+		current = null;
+	}
 
-        String raw(String key, String fallback) {
-            String override = OVERRIDES.get(key);
-            if (override != null) {
-                return override.trim();
-            }
-            String value = PropertiesLoader.getProperty(key, fallback);
-            return value == null ? fallback : value.trim();
-        }
+	private static FxSettings load() {
+		Reader in = new Reader();
 
-        String string(String key, String fallback) {
-            return raw(key, fallback);
-        }
+		App app = new App(in.string("app.name", "Application"), in.bool("fx.app.exit-on-stop", true),
+				in.bool("fx.controllers.required", true), in.bool("fx.app.font.smooth", true));
 
-        boolean bool(String key, boolean fallback) {
-            String value = raw(key, String.valueOf(fallback));
-            if (value.equalsIgnoreCase("true")) return true;
-            if (value.equalsIgnoreCase("false")) return false;
-            errors.add(key + "=" + value + " (expected true or false)");
-            return fallback;
-        }
+		Theme theme = new Theme(in.bool("fx.theme.enabled", true),
+				in.string("fx.theme.stylesheet", "/static/css/style.css"),
+				in.string("fx.theme.dark-mode-key", "isDarkMode"), in.string("fx.theme.dark-style-class", "dark-mode"),
+				in.color("fx.theme.light-fill", "#FFFFFF"), in.color("fx.theme.dark-fill", "#000000"));
 
-        double number(String key, double fallback, double min, double max) {
-            String value = raw(key, String.valueOf(fallback));
-            try {
-                double parsed = Double.parseDouble(value);
-                if (parsed < min || parsed > max) {
-                    errors.add(key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
-                    return fallback;
-                }
-                return parsed;
-            } catch (NumberFormatException e) {
-                errors.add(key + "=" + value + " (expected a number)");
-                return fallback;
-            }
-        }
-        
-        long number(String key, long fallback, long min, long max) {
-            String value = raw(key, String.valueOf(fallback));
-            try {
-                long parsed = Long.parseLong(value);
-                if (parsed < min || parsed > max) {
-                    errors.add(key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
-                    return fallback;
-                }
-                return parsed;
-            } catch (NumberFormatException e) {
-                errors.add(key + "=" + value + " (expected a number)");
-                return fallback;
-            }
-        }
+		Preloader preloader = new Preloader(in.bool("fx.preloader.enabled", true),
+				in.string("fx.preloader.stylesheet", ""),
+				in.enumeration("fx.preloader.theme", PreloaderTheme.AUTO, PreloaderTheme.class),
+				in.bool("fx.preloader.decorated", false), in.number("fx.preloader.width", 400, 100, 4000),
+				in.number("fx.preloader.height", 200, 100, 4000), in.number("fx.preloader.bar-width", 300, 50, 4000),
+				in.number("fx.preloader.bar-height", 15, 2, 200), in.number("fx.preloader.title-font-size", 18, 6, 96),
+				in.string("fx.preloader.message.starting", "Starting..."),
+				in.string("fx.preloader.message.initializing", "Initializing application..."),
+				in.string("fx.preloader.message.injecting", "Injecting data..."),
+				in.string("fx.preloader.message.preparing", "Preparing components..."),
+				in.string("fx.preloader.message.registering", "Registering services..."),
+				in.string("fx.preloader.message.finalizing", "Finalizing..."),
+				in.string("fx.preloader.message.failed", "Startup failed"),
+				in.number("fx.preloader.delay", 0, 0, 100000));
 
-        <E extends Enum<E>> E enumeration(String key, E fallback, Class<E> type) {
-            String value = raw(key, fallback.name());
-            String normalized = value.toUpperCase(Locale.ROOT).replace('-', '_');
-            for (E constant : type.getEnumConstants()) {
-                if (constant.name().equals(normalized)) {
-                    return constant;
-                }
-            }
-            errors.add(key + "=" + value + " (expected one of " + List.of(type.getEnumConstants()) + ")");
-            return fallback;
-        }
+		Router router = new Router(in.bool("fx.router.validate-on-init", true),
+				in.bool("fx.router.run-on-fx-thread", true),
+				in.enumeration("fx.router.dispose-policy", DisposePolicy.ON_LEAVE, DisposePolicy.class),
+				in.string("fx.router.content-container-id", "contentContainer"),
+				(int) in.number("fx.router.max-redirects", 10, 1, 100));
 
-        Color color(String key, String fallback) {
-            String value = raw(key, fallback);
-            try {
-                return Color.web(value);
-            } catch (IllegalArgumentException | NullPointerException e) {
-                errors.add(key + "=" + value + " (expected a color such as #FFFFFF or white)");
-                return Color.web(fallback);
-            }
-        }
+		Components components = new Components(in.directory("fx.components.fxml-base", "/views/"));
 
-        String directory(String key, String fallback) {
-            String value = raw(key, fallback);
-            if (value.isEmpty()) {
-                return fallback;
-            }
-            return value.endsWith("/") ? value : value + "/";
-        }
+		Background background = new Background((int) in.number("fx.background.threads", 4, 1, 64),
+				(int) in.number("fx.background.scheduled-threads", 2, 1, 64), in.bool("fx.background.daemon", true),
+				(long) in.number("fx.background.shutdown-wait-ms", 1000, 0, 60000));
 
-        void failOnErrors() {
-            if (!errors.isEmpty()) {
-                throw new FrameworkException("Invalid JavaFX module settings:\n - " + String.join("\n - ", errors));
-            }
-        }
+		Toast toast = new Toast(in.enumeration("fx.toast.position", ToastPosition.BOTTOM_RIGHT, ToastPosition.class),
+				(long) in.number("fx.toast.duration-ms", 3000, 100, 600000),
+				in.number("fx.toast.offset-x", 20, 0, 2000), in.number("fx.toast.offset-y", 20, 0, 2000),
+				in.number("fx.toast.max-width", 350, 50, 4000), in.number("fx.toast.max-height", 200, 30, 4000));
 
-        private static String trim(double value) {
-            return value == Math.rint(value) ? String.valueOf((long) value) : String.valueOf(value);
-        }
-    }
+		Scroll scroll = new Scroll(in.bool("fx.scroll.smooth", true), in.number("fx.scroll.speed", 2.0, 0.1, 20),
+				in.number("fx.scroll.response-ms", 80, 10, 1000), in.bool("fx.scroll.content-caching", true));
+
+		Notification notification = new Notification(in.bool("fx.notification.enabled", true),
+				in.bool("fx.notification.tray", true), in.string("fx.notification.tray-icon", ""),
+				in.string("fx.notification.tray-tooltip", app.name()),
+				(long) in.number("fx.notification.poll-seconds", 60, 5, 3600),
+				(int) in.number("fx.notification.max-per-cycle", 3, 1, 20),
+				(long) in.number("fx.notification.keep-hours", 48, 1, 720));
+		Keyboard keyboard = new Keyboard(
+		        in.bool("fx.keyboard.enabled", false),
+		        in.string("fx.keyboard.stylesheet", ""),
+		        in.string("fx.keyboard.style-class", "fxvk"),
+		        in.bool("fx.keyboard.inherit-theme", true),
+		        in.string("fx.keyboard.layout", "qwerty"),
+		        in.list("fx.keyboard.layouts"),
+		        in.string("fx.keyboard.anchor-id", ""),
+		        in.number("fx.keyboard.min-width", 0.0, 0.0, 10000.0),
+		        in.number("fx.keyboard.max-width", 0.0, 0.0, 10000.0),
+		        in.number("fx.keyboard.key-height", 52.0, 24.0, 200.0),
+		        in.number("fx.keyboard.key-gap", 6.0, 0.0, 50.0),
+		        in.number("fx.keyboard.max-key-width", 96.0, 24.0, 400.0),
+		        in.enumeration("fx.keyboard.scope", KeyboardScope.ALL, KeyboardScope.class));
+
+		if (keyboard.enabled() && keyboard.minWidth() > 0 && keyboard.maxWidth() > 0
+		        && keyboard.minWidth() > keyboard.maxWidth()) {
+		    in.errors.add("fx.keyboard.min-width=" + Reader.trim(keyboard.minWidth())
+		            + " (must not be greater than fx.keyboard.max-width=" + Reader.trim(keyboard.maxWidth()) + ")");
+		}
+		
+		in.failOnErrors();
+		return new FxSettings(app, theme, preloader, router, components, background, toast, scroll, notification,
+				keyboard);
+	}
+
+	private static final class Reader {
+		private final List<String> errors = new ArrayList<>();
+
+		String raw(String key, String fallback) {
+			String override = OVERRIDES.get(key);
+			if (override != null) {
+				return override.trim();
+			}
+			String value = PropertiesLoader.getProperty(key, fallback);
+			return value == null ? fallback : value.trim();
+		}
+
+		String string(String key, String fallback) {
+			return raw(key, fallback);
+		}
+		
+		List<String> list(String key) {
+		    String value = raw(key, "");
+		    if (value.isEmpty()) {
+		        return List.of();
+		    }
+		    List<String> items = new ArrayList<>();
+		    for (String item : value.split(",")) {
+		        String trimmed = item.trim();
+		        if (!trimmed.isEmpty()) {
+		            items.add(trimmed);
+		        }
+		    }
+		    return List.copyOf(items);
+		}
+
+		boolean bool(String key, boolean fallback) {
+			String value = raw(key, String.valueOf(fallback));
+			if (value.equalsIgnoreCase("true"))
+				return true;
+			if (value.equalsIgnoreCase("false"))
+				return false;
+			errors.add(key + "=" + value + " (expected true or false)");
+			return fallback;
+		}
+
+		double number(String key, double fallback, double min, double max) {
+			String value = raw(key, String.valueOf(fallback));
+			try {
+				double parsed = Double.parseDouble(value);
+				if (parsed < min || parsed > max) {
+					errors.add(
+							key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
+					return fallback;
+				}
+				return parsed;
+			} catch (NumberFormatException e) {
+				errors.add(key + "=" + value + " (expected a number)");
+				return fallback;
+			}
+		}
+
+		long number(String key, long fallback, long min, long max) {
+			String value = raw(key, String.valueOf(fallback));
+			try {
+				long parsed = Long.parseLong(value);
+				if (parsed < min || parsed > max) {
+					errors.add(
+							key + "=" + value + " (expected a number between " + trim(min) + " and " + trim(max) + ")");
+					return fallback;
+				}
+				return parsed;
+			} catch (NumberFormatException e) {
+				errors.add(key + "=" + value + " (expected a number)");
+				return fallback;
+			}
+		}
+
+		<E extends Enum<E>> E enumeration(String key, E fallback, Class<E> type) {
+			String value = raw(key, fallback.name());
+			String normalized = value.toUpperCase(Locale.ROOT).replace('-', '_');
+			for (E constant : type.getEnumConstants()) {
+				if (constant.name().equals(normalized)) {
+					return constant;
+				}
+			}
+			errors.add(key + "=" + value + " (expected one of " + List.of(type.getEnumConstants()) + ")");
+			return fallback;
+		}
+
+		Color color(String key, String fallback) {
+			String value = raw(key, fallback);
+			try {
+				return Color.web(value);
+			} catch (IllegalArgumentException | NullPointerException e) {
+				errors.add(key + "=" + value + " (expected a color such as #FFFFFF or white)");
+				return Color.web(fallback);
+			}
+		}
+
+		String directory(String key, String fallback) {
+			String value = raw(key, fallback);
+			if (value.isEmpty()) {
+				return fallback;
+			}
+			return value.endsWith("/") ? value : value + "/";
+		}
+
+		void failOnErrors() {
+			if (!errors.isEmpty()) {
+				throw new FrameworkException("Invalid JavaFX module settings:\n - " + String.join("\n - ", errors));
+			}
+		}
+
+		private static String trim(double value) {
+			return value == Math.rint(value) ? String.valueOf((long) value) : String.valueOf(value);
+		}
+	}
 }

@@ -1,10 +1,15 @@
 package io.github.itech_framework.java_fx.ui.keyboard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputControl;
+import javafx.stage.PopupWindow;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 /**
@@ -48,6 +53,8 @@ import javafx.stage.Window;
  */
 public final class KeyboardAnchors {
     public static final String PROPERTY = "fx.keyboard.anchor";
+    
+    private static final int MAX_OWNER_DEPTH = 32;
 
     private KeyboardAnchors() {}
 
@@ -95,7 +102,63 @@ public final class KeyboardAnchors {
         if (bounds != null) {
             return bounds;
         }
-        return new BoundingBox(window.getX(), window.getY(), window.getWidth(), window.getHeight());
+        Window reference = referenceWindow(window);
+        return new BoundingBox(reference.getX(), reference.getY(), reference.getWidth(), reference.getHeight());
+    }
+
+    public static Window referenceWindow(Window window) {
+        Window reference = window;
+        Window candidate = ownerOf(window);
+        for (int depth = 0; candidate != null && depth < MAX_OWNER_DEPTH; depth++) {
+            if (candidate.isShowing()) {
+                reference = candidate;
+            }
+            candidate = ownerOf(candidate);
+        }
+        return reference;
+    }
+
+    private static List<Scene> lookupScenes(Scene own) {
+        List<Scene> scenes = new ArrayList<>();
+        Window window = own == null ? null : own.getWindow();
+        if (window != null) {
+            Window candidate = ownerOf(window);
+            for (int depth = 0; candidate != null && depth < MAX_OWNER_DEPTH; depth++) {
+                if (candidate.isShowing() && candidate.getScene() != null) {
+                    scenes.add(0, candidate.getScene());
+                }
+                candidate = ownerOf(candidate);
+            }
+        }
+        if (own != null) {
+            scenes.add(own);
+        }
+        return scenes;
+    }
+
+    private static Window ownerOf(Window window) {
+        if (window instanceof Stage stage) {
+            return stage.getOwner();
+        }
+        if (window instanceof PopupWindow popup) {
+            return popup.getOwnerWindow();
+        }
+        return null;
+    }
+
+    private static Node toNode(Object value, List<Scene> scenes) {
+        if (value instanceof Node node) {
+            return node;
+        }
+        if (value instanceof String id && !id.isBlank()) {
+            for (Scene scene : scenes) {
+                Node found = scene.getRoot().lookup("#" + id.trim());
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -122,14 +185,14 @@ public final class KeyboardAnchors {
      * @return the anchor node, or {@code null} when none is assigned
      */
     public static Node find(TextInputControl input, String configuredId) {
-        Scene scene = input.getScene();
+        List<Scene> scenes = lookupScenes(input.getScene());
         for (Node node = input; node != null; node = node.getParent()) {
-            Node anchor = toNode(node.getProperties().get(PROPERTY), scene);
+            Node anchor = toNode(node.getProperties().get(PROPERTY), scenes);
             if (anchor != null) {
                 return anchor;
             }
         }
-        return toNode(configuredId, scene);
+        return toNode(configuredId, scenes);
     }
 
     private static void store(Node node, Object value) {
@@ -138,16 +201,6 @@ public final class KeyboardAnchors {
         } else {
             node.getProperties().put(PROPERTY, value);
         }
-    }
-
-    private static Node toNode(Object value, Scene scene) {
-        if (value instanceof Node node) {
-            return node;
-        }
-        if (value instanceof String id && !id.isBlank() && scene != null) {
-            return scene.getRoot().lookup("#" + id.trim());
-        }
-        return null;
     }
 
     private static Bounds screenBounds(Node node) {

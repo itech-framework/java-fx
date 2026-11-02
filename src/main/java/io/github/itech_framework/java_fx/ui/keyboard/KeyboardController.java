@@ -40,6 +40,7 @@ public final class KeyboardController {
 	private final EventHandler<MouseEvent> clickFilter = this::onClick;
 
 	private Window trackedWindow;
+    private Window trackedReference;
 	private TextInputControl trackedInput;
 	private Node trackedAnchor;
 	private boolean pending;
@@ -108,15 +109,22 @@ public final class KeyboardController {
 		}
 	}
 
-	private void detach(Window window) {
-		windows.remove(window);
-		if (popup.getOwnerWindow() == window) {
-			hide();
-		}
-		if (window.getScene() != null) {
-			unbind(window.getScene());
-		}
-	}
+    private void detach(Window window) {
+        windows.remove(window);
+        if (popup.getOwnerWindow() == window) {
+            untrack();
+            keyboard.setTarget(null);
+            Platform.runLater(() -> {
+                Window current = popup.getOwnerWindow();
+                if (popup.isShowing() && (current == null || current == window)) {
+                    hide();
+                }
+            });
+        }
+        if (window.getScene() != null) {
+            unbind(window.getScene());
+        }
+    }
 
 	private void bind(Scene scene) {
 		if (!scenes.add(scene)) {
@@ -193,7 +201,7 @@ public final class KeyboardController {
 		keyboard.setLayout(KeyboardLayouts.resolve(input, layoutId));
 		keyboard.setTarget(input);
 		syncDark(input);
-		track(window, input, KeyboardAnchors.find(input, options.anchor()));
+        track(window, KeyboardAnchors.referenceWindow(window), input, KeyboardAnchors.find(input, options.anchor()));
 		place();
 		schedule();
 	}
@@ -227,9 +235,11 @@ public final class KeyboardController {
 		}
 		Window window = input.getScene().getWindow();
 		KeyboardOptions options = KeyboardOptions.of(input);
-		Bounds anchored = KeyboardAnchors.anchorBounds(input, options.anchor());
-		Bounds area = anchored != null ? anchored
-				: new BoundingBox(window.getX(), window.getY(), window.getWidth(), window.getHeight());
+        Window reference = KeyboardAnchors.referenceWindow(window);
+        Bounds anchored = KeyboardAnchors.anchorBounds(input, options.anchor());
+        Bounds area = anchored != null ? anchored
+                : new BoundingBox(reference.getX(), reference.getY(), reference.getWidth(), reference.getHeight());
+        
 		Rectangle2D screen = screenOf(area);
 
 		double width = area.getWidth();
@@ -271,11 +281,19 @@ public final class KeyboardController {
 		}
 	}
 
-	private void track(Window window, TextInputControl input, Node anchor) {
-		untrack();
-		trackedWindow = window;
-		trackedInput = input;
-		trackedAnchor = anchor;
+    private void track(Window window, Window reference, TextInputControl input, Node anchor) {
+        untrack();
+        trackedWindow = window;
+        trackedReference = reference == window ? null : reference;
+        trackedInput = input;
+        trackedAnchor = anchor;
+        if (trackedReference != null) {
+            trackedReference.xProperty().addListener(changed);
+            trackedReference.yProperty().addListener(changed);
+            trackedReference.widthProperty().addListener(changed);
+            trackedReference.heightProperty().addListener(changed);
+            trackedReference.showingProperty().addListener(changed);
+        }
 		window.xProperty().addListener(changed);
 		window.yProperty().addListener(changed);
 		window.widthProperty().addListener(changed);
@@ -298,6 +316,14 @@ public final class KeyboardController {
 			trackedWindow.showingProperty().removeListener(changed);
 			trackedWindow = null;
 		}
+        if (trackedReference != null) {
+            trackedReference.xProperty().removeListener(changed);
+            trackedReference.yProperty().removeListener(changed);
+            trackedReference.widthProperty().removeListener(changed);
+            trackedReference.heightProperty().removeListener(changed);
+            trackedReference.showingProperty().removeListener(changed);
+            trackedReference = null;
+        }
 		if (trackedInput != null) {
 			trackedInput.editableProperty().removeListener(changed);
 			trackedInput.disableProperty().removeListener(changed);

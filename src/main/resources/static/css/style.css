@@ -592,6 +592,13 @@
     -fx-cursor: default;
 }
 
+.alert-default-button:focused {
+    -fx-background-color: -fx-text-color, -fx-primary;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+    -fx-text-fill: -fx-on-primary;
+}
+
 .alert-default-button:hover {
     -fx-background-color: -fx-primary-dark;
 }

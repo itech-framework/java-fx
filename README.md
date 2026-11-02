@@ -150,7 +150,9 @@ public class DashboardController implements Routable {
 
 `@OnInit` runs after the FXML and controller are loaded, before the UI update.
 
-`@PreDestroy` is invoked by the framework before the controller is disposed or destroyed.
+`@PreDestroy` is invoked by the framework when the controller is destroyed. A controller is destroyed when its page is removed from the navigation stack: `back()`, `pop()`, `off(...)`, `offAll(...)`, `refresh()` and `shutdown()`. It is not destroyed when you navigate forward with `to(...)`, because the page stays on the stack and `back()` shows it again.
+
+`Routable.dispose()` is a separate hook. It runs when the page is left with `to(...)` (under `ON_LEAVE`) and again when the page is removed. It does not run `@PreDestroy` and does not destroy the controller's `@FxUse` components.
 
 ### Custom FxComponents
 The framework supports custom components through the MVVM pattern:
@@ -216,13 +218,38 @@ public class DashboardController {
 }
 ```
 
-- `FxProvider<T>` loads nothing until you call it. `get()` returns one instance per owner by default (`FxScope.OWNER`) and a new instance on every call with `FxScope.PROTOTYPE`. `create(args...)` always builds a new instance. `release(instance)` destroys one early.
+- `FxProvider<T>` loads nothing until you call it. `get()` returns one instance per owner by default (`FxScope.OWNER`) and a new instance on every call with `FxScope.PROTOTYPE`. `create(args...)` always builds a new instance. `release(instance)` destroys one instance early. `releaseAll()` destroys every instance the provider created. `liveCount()` returns how many are alive.
+- `release(instance)` runs `@PreDestroy` and disposes the component's own children, but it does not remove the component's root node from the scene. Remove the node from its parent yourself.
+- `releaseAll()` removes each root from its parent and then destroys the instances, newest first. Roots are only detached from a `Pane` parent (`VBox`, `HBox`, `FlowPane`, `StackPane`, `GridPane`). A root inside a `ScrollPane` or `TabPane` is left in place. Call it from the JavaFX thread.
+- `releaseAll()` does not close the provider. You can call `create(...)` or `get()` again afterwards, and `get()` in `OWNER` scope builds a new instance. A failing `@PreDestroy` is logged and does not stop the other instances.
 - `@FxUse WelcomeWidget widget;` (the class itself) loads the component when its owner is created. Use it only for small, always-visible parts. It cannot use `FxScope.PROTOTYPE`.
 - Components are created on the JavaFX thread, even when you call `get()` from another thread.
-- When the owner is destroyed, its own `@PreDestroy` runs first and then the `@PreDestroy` methods of everything it created, newest first. Anything still alive when the application shuts down is destroyed too. If a load fails, the children created so far are destroyed.
+- When the owner is destroyed, its own `@PreDestroy` runs first and then the `@PreDestroy` methods of everything it created, newest first. Instances already released are not destroyed twice. After that the providers are closed, and a later `create(...)` or `get()` throws `IllegalStateException`. Guard background tasks that may finish after the page is gone.
 - Do not add the same shared component's root node to two screens. A JavaFX node can only have one parent.
-- A warning is logged when one provider holds more than `fx.components.live-warn` live instances (default 100). Release instances you no longer need, or reuse one component instead of creating one per item.
-- `@FxUse` works in classes the framework loads from FXML (controllers and `@FxComponent`s), not in ordinary `@Component` services.
+- A warning is logged when one provider holds more than `fx.components.live-warn` live instances (default 100). When you rebuild a list or grid on a page that stays open, call `releaseAll()` before creating the new items.
+- `@FxUse` works in classes the framework loads from FXML (controllers and `@FxComponent`s), not in ordinary `@Component` services or static helpers. Pass the provider to such helpers as a parameter.
+- The field must be non-static and non-final, and its type must be `FxProvider<YourComponent>` where the component is annotated with `@FxComponent`.
+
+Rebuilding a list on a page that stays open:
+
+```java
+@FxController
+public class NotesController implements Routable {
+    @FxUse(scope = FxScope.PROTOTYPE)
+    private FxProvider<NoteCard> cards;
+
+    @FXML
+    private FlowPane grid;
+
+    private void showNotes(List<Note> notes) {
+        cards.releaseAll();
+        for (Note note : notes) {
+            grid.getChildren().add(cards.create(note).getRoot());
+        }
+    }
+}
+```
+
 ## Configuration ⚙️
 
 All keys go in `application.properties` (or a profile override such as `application-dev.properties`). Every key has a default, so you only need to set the ones you want to change.
@@ -357,7 +384,7 @@ The preloader is the splash window shown while the framework builds and injects 
 |-----|---------|-------------|
 | `fx.router.validate-on-init` | `true` | Validate registered routes (FXML and controllers) when the router initializes, so mistakes fail early. |
 | `fx.router.run-on-fx-thread` | `true` | Run navigation on the JavaFX Application Thread. |
-| `fx.router.dispose-policy` | `ON_LEAVE` | When a page controller is disposed and its `@PreDestroy` methods run. `ON_LEAVE` disposes it as soon as the user navigates away. |
+| `fx.router.dispose-policy` | `ON_LEAVE` | When `Routable.dispose()` is called on a page that is left with `to(...)`. `ON_LEAVE` calls it as soon as the user navigates forward. `@PreDestroy` and the destruction of `@FxUse` components happen later, when the page is removed from the navigation stack. |
 | `fx.router.content-container-id` | `contentContainer` | The `fx:id` of the container where pages are loaded inside a layout. |
 | `fx.router.max-redirects` | `10` | Maximum chained redirects (middlewares) per navigation. This stops redirect loops. |
 
@@ -622,6 +649,7 @@ Use the same version for the core and every module, and rebuild your application
 - The jar has the module name `io.github.itech_framework.java_fx`.
 - The virtual keyboard is new and off by default (`fx.keyboard.enabled=false`).
 - `@FxUse` and `FxProvider` can replace manual `FxComponentLoader.load` calls and dispose the components with their owner.
+- `FxProvider.releaseAll()` and `FxComponentLoader.rootOf(Object)`. If you implement `FxProvider` yourself, add `releaseAll()`.
 
 ## Migrating from `@Rx`
 

@@ -181,9 +181,9 @@ class KeyboardOwnerPlacementTest {
     void nestedDialogsFollowTheOutermostOwner() {
         TextField field = new TextField();
         onFx(() -> {
-            owner = stage(null, new VBox(), 50, 40, 1000, 700);
-            dialog = stage(owner, new VBox(), 300, 100, 500, 200);
-            nested = stage(dialog, new VBox(field), 400, 130, 260, 120);
+            owner = stage(null, new VBox(), 20, 20, 900, 600);
+            dialog = stage(owner, new VBox(), 200, 80, 500, 200);
+            nested = stage(dialog, new VBox(field), 260, 110, 260, 120);
             field.requestFocus();
         });
 

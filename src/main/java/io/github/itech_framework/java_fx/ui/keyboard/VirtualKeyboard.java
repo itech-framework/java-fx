@@ -62,6 +62,7 @@ public final class VirtualKeyboard extends Region {
     }
 
     public void setTarget(TextInputControl input) {
+        stopRepeat();
         target = input;
         if (shift) {
             shift = false;
@@ -104,6 +105,7 @@ public final class VirtualKeyboard extends Region {
     }
 
     private void rebuild() {
+    	stopRepeat();
         getChildren().clear();
         rowKeys.clear();
         rowNodes.clear();

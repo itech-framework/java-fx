@@ -17,6 +17,9 @@ import io.github.itech_framework.core.exceptions.FrameworkException;
 import io.github.itech_framework.java_fx.annotations.FxUse;
 import io.github.itech_framework.java_fx.annotations.components.FxComponent;
 import io.github.itech_framework.java_fx.annotations.components.FxScope;
+import io.github.itech_framework.java_fx.annotations.components.Root;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 class FxUseTest {
 
@@ -52,6 +55,18 @@ class FxUseTest {
         @FxUse(scope = FxScope.PROTOTYPE)
         FxProvider<Recursive> next;
     }
+    
+    @FxComponent("")
+    static class Card {
+        @Root
+        Pane root = new Pane();
+    }
+
+    static class CardOwner {
+        @FxUse(scope = FxScope.PROTOTYPE)
+        FxProvider<Card> cards;
+    }
+
 
     private static class FakeRuntime implements ComponentRuntime {
         final List<Object> created = new ArrayList<>();
@@ -176,5 +191,33 @@ class FxUseTest {
         RecursingRuntime runtime = new RecursingRuntime(1000);
         OwnedProvider<Recursive> provider = new OwnedProvider<>(Recursive.class, FxScope.PROTOTYPE, runtime, 1000);
         assertThrows(FrameworkException.class, () -> provider.create());
+    }
+    
+
+    @Test
+    void releaseAllDetachesRootsAndDestroysEveryInstanceNewestFirst() {
+        FakeRuntime runtime = new FakeRuntime();
+        CardOwner owner = new CardOwner();
+        FxInjector.inject(owner, runtime, 100);
+        VBox parent = new VBox();
+        Card first = owner.cards.create();
+        Card second = owner.cards.create();
+        parent.getChildren().addAll(first.root, second.root);
+        owner.cards.releaseAll();
+        assertEquals(0, parent.getChildren().size());
+        assertEquals(List.of(second, first), runtime.disposed);
+        assertEquals(0, owner.cards.liveCount());
+    }
+
+    @Test
+    void providerStaysOpenAfterReleaseAll() {
+        FakeRuntime runtime = new FakeRuntime();
+        Owner owner = new Owner();
+        FxInjector.inject(owner, runtime, 100);
+        owner.shared.get();
+        owner.shared.releaseAll();
+        owner.shared.get();
+        assertEquals(2, runtime.created.size());
+        assertEquals(1, runtime.disposed.size());
     }
 }

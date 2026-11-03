@@ -19,6 +19,7 @@ import io.github.itech_framework.java_fx.router.Router;
 import io.github.itech_framework.java_fx.ui.FrameworkPreloader;
 import io.github.itech_framework.java_fx.ui.SmoothScroll;
 import io.github.itech_framework.java_fx.ui.keyboard.KeyboardController;
+import io.github.itech_framework.java_fx.ui.window.StageFrameManager;
 import io.github.itech_framework.java_fx.utils.concurrent.BackgroundTaskService;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
 import io.github.itech_framework.java_fx.utils.notification.SystemNotificationService;
@@ -76,6 +77,7 @@ public abstract class ITechJavaFxApplication extends Application {
 	        onInit();
 	        configureScrolling();
 	        configureKeyboard();
+	        configureWindowFrame();
 	        progress(1.0);
 	    } catch (Exception e) {
 	        onStartupFailure(e);
@@ -103,6 +105,19 @@ public abstract class ITechJavaFxApplication extends Application {
 	            KeyboardController.install();
 	        } catch (RuntimeException e) {
 	            logger.warn("Keyboard could not be initialized", e);
+	        }
+	    });
+	}
+	
+	private void configureWindowFrame() {
+	    if (!FxSettings.get().windowFrame().darkFrame()) {
+	        return;
+	    }
+	    Platform.runLater(() -> {
+	        try {
+	            StageFrameManager.install();
+	        } catch (RuntimeException | LinkageError e) {
+	            logger.warn("Window frame theme could not be initialized", e);
 	        }
 	    });
 	}

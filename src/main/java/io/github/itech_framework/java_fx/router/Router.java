@@ -31,6 +31,7 @@ import io.github.itech_framework.java_fx.router.core.Routable;
 import io.github.itech_framework.java_fx.router.core.Route;
 import io.github.itech_framework.java_fx.ui.layout.LayoutConfig;
 import io.github.itech_framework.java_fx.ui.layout.LayoutController;
+import io.github.itech_framework.java_fx.ui.window.StageFrameManager;
 import io.github.itech_framework.java_fx.utils.FxResources;
 import io.github.itech_framework.java_fx.utils.FxTheme;
 import io.github.itech_framework.java_fx.utils.notification.NotificationCenter;
@@ -218,6 +219,7 @@ public class Router {
             if (primaryStage != null && primaryStage.getScene() != null) {
                 applyTheme(primaryStage.getScene());
             }
+            StageFrameManager.refresh();
         });
     }
 

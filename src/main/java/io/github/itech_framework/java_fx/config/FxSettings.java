@@ -36,7 +36,8 @@ public final class FxSettings {
 			String contentContainerId, int maxRedirects) {
 	}
 
-	public record Components(String fxmlBase, int liveWarn) {}
+	public record Components(String fxmlBase, int liveWarn) {
+	}
 
 	public record Background(int threads, int scheduledThreads, boolean daemon, long shutdownWaitMillis) {
 	}
@@ -52,9 +53,13 @@ public final class FxSettings {
 			int maxPerCycle, long keepHours) {
 	}
 
-	public record Keyboard(boolean enabled, String stylesheet, String styleClass, boolean inheritTheme,
-            String layout, List<String> layouts, String anchorId, double minWidth, double maxWidth,
-            double keyHeight, double keyGap, double maxKeyWidth, KeyboardScope scope) {}
+	public record Keyboard(boolean enabled, String stylesheet, String styleClass, boolean inheritTheme, String layout,
+			List<String> layouts, String anchorId, double minWidth, double maxWidth, double keyHeight, double keyGap,
+			double maxKeyWidth, KeyboardScope scope) {
+	}
+
+	public record WindowFrame(boolean darkFrame) {
+	}
 
 	private static final Map<String, String> OVERRIDES = new ConcurrentHashMap<>();
 	private static volatile FxSettings current;
@@ -73,8 +78,11 @@ public final class FxSettings {
 
 	private final Keyboard keyboard;
 
+	private final WindowFrame windowFrame;
+
 	private FxSettings(App app, Theme theme, Preloader preloader, Router router, Components components,
-			Background background, Toast toast, Scroll scroll, Notification notification, Keyboard keyboard) {
+			Background background, Toast toast, Scroll scroll, Notification notification, Keyboard keyboard,
+			WindowFrame windowFrame) {
 		this.app = app;
 		this.theme = theme;
 		this.preloader = preloader;
@@ -85,6 +93,7 @@ public final class FxSettings {
 		this.scroll = scroll;
 		this.notification = notification;
 		this.keyboard = keyboard;
+		this.windowFrame = windowFrame;
 	}
 
 	public Keyboard keyboard() {
@@ -125,6 +134,10 @@ public final class FxSettings {
 
 	public Toast toast() {
 		return toast;
+	}
+	
+	public WindowFrame windowFrame() {
+		return windowFrame;
 	}
 
 	public static FxSettings get() {
@@ -191,9 +204,9 @@ public final class FxSettings {
 				in.string("fx.router.content-container-id", "contentContainer"),
 				(int) in.number("fx.router.max-redirects", 10, 1, 100));
 
-        Components components = new Components(in.directory("fx.components.fxml-base", "/views/"),
-                (int) in.number("fx.components.live-warn", 100, 1, 100000));
-        
+		Components components = new Components(in.directory("fx.components.fxml-base", "/views/"),
+				(int) in.number("fx.components.live-warn", 100, 1, 100000));
+
 		Background background = new Background((int) in.number("fx.background.threads", 4, 1, 64),
 				(int) in.number("fx.background.scheduled-threads", 2, 1, 64), in.bool("fx.background.daemon", true),
 				(long) in.number("fx.background.shutdown-wait-ms", 1000, 0, 60000));
@@ -212,30 +225,27 @@ public final class FxSettings {
 				(long) in.number("fx.notification.poll-seconds", 60, 5, 3600),
 				(int) in.number("fx.notification.max-per-cycle", 3, 1, 20),
 				(long) in.number("fx.notification.keep-hours", 48, 1, 720));
-		Keyboard keyboard = new Keyboard(
-		        in.bool("fx.keyboard.enabled", false),
-		        in.string("fx.keyboard.stylesheet", ""),
-		        in.string("fx.keyboard.style-class", "fxvk"),
-		        in.bool("fx.keyboard.inherit-theme", true),
-		        in.string("fx.keyboard.layout", "qwerty"),
-		        in.list("fx.keyboard.layouts"),
-		        in.string("fx.keyboard.anchor-id", ""),
-		        in.number("fx.keyboard.min-width", 0.0, 0.0, 10000.0),
-		        in.number("fx.keyboard.max-width", 0.0, 0.0, 10000.0),
-		        in.number("fx.keyboard.key-height", 52.0, 24.0, 200.0),
-		        in.number("fx.keyboard.key-gap", 6.0, 0.0, 50.0),
-		        in.number("fx.keyboard.max-key-width", 96.0, 24.0, 400.0),
-		        in.enumeration("fx.keyboard.scope", KeyboardScope.ALL, KeyboardScope.class));
+		Keyboard keyboard = new Keyboard(in.bool("fx.keyboard.enabled", false), in.string("fx.keyboard.stylesheet", ""),
+				in.string("fx.keyboard.style-class", "fxvk"), in.bool("fx.keyboard.inherit-theme", true),
+				in.string("fx.keyboard.layout", "qwerty"), in.list("fx.keyboard.layouts"),
+				in.string("fx.keyboard.anchor-id", ""), in.number("fx.keyboard.min-width", 0.0, 0.0, 10000.0),
+				in.number("fx.keyboard.max-width", 0.0, 0.0, 10000.0),
+				in.number("fx.keyboard.key-height", 52.0, 24.0, 200.0),
+				in.number("fx.keyboard.key-gap", 6.0, 0.0, 50.0),
+				in.number("fx.keyboard.max-key-width", 96.0, 24.0, 400.0),
+				in.enumeration("fx.keyboard.scope", KeyboardScope.ALL, KeyboardScope.class));
 
 		if (keyboard.enabled() && keyboard.minWidth() > 0 && keyboard.maxWidth() > 0
-		        && keyboard.minWidth() > keyboard.maxWidth()) {
-		    in.errors.add("fx.keyboard.min-width=" + Reader.trim(keyboard.minWidth())
-		            + " (must not be greater than fx.keyboard.max-width=" + Reader.trim(keyboard.maxWidth()) + ")");
+				&& keyboard.minWidth() > keyboard.maxWidth()) {
+			in.errors.add("fx.keyboard.min-width=" + Reader.trim(keyboard.minWidth())
+					+ " (must not be greater than fx.keyboard.max-width=" + Reader.trim(keyboard.maxWidth()) + ")");
 		}
 		
+		WindowFrame windowFrame = new WindowFrame(in.bool("fx.window.dark-frame", false));
+
 		in.failOnErrors();
 		return new FxSettings(app, theme, preloader, router, components, background, toast, scroll, notification,
-				keyboard);
+				keyboard, windowFrame);
 	}
 
 	private static final class Reader {
@@ -253,20 +263,20 @@ public final class FxSettings {
 		String string(String key, String fallback) {
 			return raw(key, fallback);
 		}
-		
+
 		List<String> list(String key) {
-		    String value = raw(key, "");
-		    if (value.isEmpty()) {
-		        return List.of();
-		    }
-		    List<String> items = new ArrayList<>();
-		    for (String item : value.split(",")) {
-		        String trimmed = item.trim();
-		        if (!trimmed.isEmpty()) {
-		            items.add(trimmed);
-		        }
-		    }
-		    return List.copyOf(items);
+			String value = raw(key, "");
+			if (value.isEmpty()) {
+				return List.of();
+			}
+			List<String> items = new ArrayList<>();
+			for (String item : value.split(",")) {
+				String trimmed = item.trim();
+				if (!trimmed.isEmpty()) {
+					items.add(trimmed);
+				}
+			}
+			return List.copyOf(items);
 		}
 
 		boolean bool(String key, boolean fallback) {
